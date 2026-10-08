@@ -3,7 +3,7 @@
 Design for the Hermes companion app: one phone app that connects to your Hermes gateways and covers the features a phone needs. This is a visual design for review. No app code yet.
 
 - **Canvas (review here):** `design/canvas/project/` holds the source. The index is `canvas.json`. Each `*.dc.html` is one 390 × 844 screen, except `Main.dc.html`, the overview.
-- **Status:** draft for approval. Dark theme only. Sample data is placeholder.
+- **Status:** approved on 2026-10-08. The five decisions below are adopted at the recommended defaults. Dark theme only. Sample data is placeholder.
 
 ## Information architecture
 
@@ -116,11 +116,11 @@ These exist in Hermes but are desktop-only, admin-only, or protocol endpoints. T
 - **Protocol endpoints with no UI:** A2A, ACP, API server, Mixture of agents.
 - **Agent behaviours with no UI:** computer use, deliverable mode, document extraction, X search, Spotify. These appear only through toolsets and MCP.
 
-## Decisions for you
+## Decisions (adopted on approval)
 
-1. **Connection.** Hermes has no phone-pairing flow today. The design connects by gateway URL plus sign-in (Nous Portal, username and password on a trusted network or VPN, or Hermes Cloud). A QR pairing like OpenClaw's needs a new pairing endpoint on the Hermes side. The Connect screen shows it as a disabled, proposed option. Keep it out of v1, or add it?
-2. **Theme.** v1 is dark only. Hermes ships 8 desktop themes. Add a light theme now, or map Hermes themes later?
-3. **Device capabilities.** OpenClaw's phone nodes (camera, location, photos, screen) are not in Hermes. Not designed. Add as a later phase?
+1. **Connection.** Hermes has no phone-pairing flow today. The design connects by gateway URL plus sign-in (Nous Portal, username and password on a trusted network or VPN, or Hermes Cloud). A QR pairing like OpenClaw's needs a new pairing endpoint on the Hermes side. The Connect screen shows it as a disabled, proposed option. Adopted: out of v1. It needs a Hermes pairing endpoint first.
+2. **Theme.** v1 is dark only. Hermes ships 8 desktop themes. Adopted: dark only in v1. Map Hermes themes later.
+3. **Device capabilities.** OpenClaw's phone nodes (camera, location, photos, screen) are not in Hermes. Not designed. Adopted: a later phase.
 4. **Canvas.** Hermes has Artifacts, not a canvas. The design uses an Artifacts gallery and preview rail.
 5. **Inbox as a tab.** Approvals expire after 300 seconds, so they get their own tab rather than a menu item.
 

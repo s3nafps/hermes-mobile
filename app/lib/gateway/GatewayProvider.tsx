@@ -40,11 +40,33 @@ type GatewayContextValue = {
 const GatewayContext = createContext<GatewayContextValue | null>(null);
 
 const CONNECT_TIMEOUT_MS = 15_000;
+const REQUEST_TIMEOUT_MS = 10_000;
+
+// Bounds one connect-time request. Without it, a host that drops packets leaves
+// the app on "Connecting" for as long as the OS keeps retrying, which can be minutes.
+async function withDeadline<T>(run: (signal: AbortSignal) => Promise<T>): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    return await run(controller.signal);
+  } catch (caught) {
+    if (controller.signal.aborted) {
+      throw new Error(
+        `No answer from the gateway after ${REQUEST_TIMEOUT_MS / 1000} seconds. Check the address, and that Hermes is running and reachable from this phone.`,
+      );
+    }
+    throw caught;
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 // Reads the per-process token the dashboard injects into its page. A loopback
 // gateway (auth off) needs it on the WebSocket. Gated gateways use tickets.
 async function loopbackToken(baseUrl: string): Promise<string> {
-  const html = await fetch(baseUrl + '/', { credentials: 'include' }).then((r) => r.text());
+  const html = await withDeadline((signal) =>
+    fetch(baseUrl + '/', { credentials: 'include', signal }).then((r) => r.text()),
+  );
   const match = /window\.__HERMES_SESSION_TOKEN__="([^"]+)"/.exec(html);
   if (!match) throw new Error('This gateway did not provide a connection token.');
   return match[1];
@@ -112,7 +134,9 @@ export function GatewayProvider({ children }: { children: ReactNode }) {
       const probe = createGatewayHttp(profile.baseUrl);
 
       try {
-        const info = unwrap(await probe.GET('/api/status')) as unknown as GatewayStatus;
+        const info = unwrap(
+          await withDeadline((signal) => probe.GET('/api/status', { signal })),
+        ) as unknown as GatewayStatus;
         if (!isCurrent()) return;
         setStatus(info);
 
@@ -124,11 +148,11 @@ export function GatewayProvider({ children }: { children: ReactNode }) {
         if (info.auth_required) {
           // A signed-in cookie is only valid while the server accepts it.
           try {
-            unwrap(await client.GET('/api/auth/me'));
+            unwrap(await withDeadline((signal) => client.GET('/api/auth/me', { signal })));
           } catch (authError) {
             if (!isCurrent()) return;
             if (authError instanceof GatewayHttpError && authError.status === 401) {
-              const listed = (await client.GET('/api/auth/providers')).data as
+              const listed = (await withDeadline((signal) => client.GET('/api/auth/providers', { signal }))).data as
                 | { providers?: AuthProvider[] }
                 | undefined;
               if (!isCurrent()) return;

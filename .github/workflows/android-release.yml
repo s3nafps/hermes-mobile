@@ -1,0 +1,131 @@
+name: Android release
+
+# Builds the Android app and publishes it to a GitHub release.
+# Runs on a version tag (v1.2.3) or by hand from the Actions tab with a version.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release, for example 0.1.0'
+        required: true
+        default: '0.1.0'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-release-${{ github.ref }}-${{ github.event.inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Work out the version
+        id: version
+        env:
+          EVENT: ${{ github.event_name }}
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            VERSION="$INPUT_VERSION"
+          else
+            VERSION="${REF_NAME#v}"
+          fi
+          case "$VERSION" in
+            [0-9]*.[0-9]*.[0-9]*) ;;
+            *) echo "Version '$VERSION' must look like 1.2.3"; exit 1 ;;
+          esac
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
+
+      - name: Typecheck and lint
+        run: |
+          npx tsc --noEmit
+          CI=1 npx expo lint
+
+      - name: Set the app version and version code
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          node -e '
+            const fs = require("fs");
+            const config = JSON.parse(fs.readFileSync("app.json", "utf8"));
+            config.expo.version = process.env.VERSION;
+            config.expo.android.versionCode = Number(process.env.RUN_NUMBER);
+            fs.writeFileSync("app.json", JSON.stringify(config, null, 2) + "\n");
+          '
+
+      - name: Generate the Android project
+        run: npx expo prebuild --platform android --no-install --clean
+
+      - name: Build the release APK
+        working-directory: app/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Name the APK and write its checksum
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          cp android/app/build/outputs/apk/release/app-release.apk "hermes-mobile-$VERSION.apk"
+          sha256sum "hermes-mobile-$VERSION.apk" > "hermes-mobile-$VERSION.apk.sha256"
+          ls -l hermes-mobile-*
+
+      - name: Keep the APK as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hermes-mobile-${{ steps.version.outputs.version }}
+          path: |
+            app/hermes-mobile-*.apk
+            app/hermes-mobile-*.apk.sha256
+          if-no-files-found: error
+
+      - name: Publish the GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Hermes Mobile ${{ steps.version.outputs.version }}
+          prerelease: true
+          generate_release_notes: true
+          body: |
+            Android test build of Hermes Mobile.
+
+            Install: download `hermes-mobile-${{ steps.version.outputs.version }}.apk` on the phone, open it, and allow installs from this source. Check the file against the `.sha256` file if you want to.
+
+            Signing: this build uses the project's standard debug key, so each new build installs over the previous one. It is not a Play Store build.
+
+            Connect to a gateway that is reachable from the phone (for example over Tailscale or your home network). A gateway on another machine needs password sign-in enabled.
+          files: |
+            app/hermes-mobile-*.apk
+            app/hermes-mobile-*.apk.sha256
+          fail_on_unmatched_files: true

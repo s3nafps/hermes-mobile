@@ -1,8 +1,11 @@
-import { useFonts } from 'expo-font';
-import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
+import { DarkTheme, Stack, ThemeProvider, router, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import { tokens } from '@/constants/tokens';
+import { GatewayProvider, useGateway } from '@/lib/gateway';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -14,39 +17,50 @@ export const unstable_settings = {
   initialRouteName: '(tabs)',
 };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
+// Keep the splash up until the saved gateway has been checked.
 SplashScreen.preventAutoHideAsync();
 
+// The approved design is dark only in v1, so the theme does not follow the system setting.
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
-  useEffect(() => {
-    if (error) throw error;
-  }, [error]);
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
-
-  return <RootLayoutNav />;
+  return (
+    <SafeAreaProvider>
+      <ThemeProvider value={DarkTheme}>
+        <GatewayProvider>
+          <Gate />
+        </GatewayProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
+  );
 }
 
-// The approved design is dark only in v1, so the theme does not follow the system setting.
-function RootLayoutNav() {
+// Sends the user to the connect screen unless a gateway is online.
+function Gate() {
+  const { phase } = useGateway();
+  const segments = useSegments();
+  const onConnect = segments[0] === 'connect';
+
+  useEffect(() => {
+    if (phase === 'loading') return;
+    void SplashScreen.hideAsync();
+    if (phase === 'online') {
+      if (onConnect) router.replace('/(tabs)');
+      return;
+    }
+    if (!onConnect) router.replace('/connect');
+  }, [phase, onConnect]);
+
+  if (phase === 'loading') return null;
+
   return (
-    <ThemeProvider value={DarkTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
-    </ThemeProvider>
+    <Stack
+      screenOptions={{
+        headerStyle: { backgroundColor: tokens.bg },
+        headerTintColor: tokens.text,
+        headerShadowVisible: false,
+        contentStyle: { backgroundColor: tokens.bg },
+      }}>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="connect" options={{ headerShown: false }} />
+    </Stack>
   );
 }

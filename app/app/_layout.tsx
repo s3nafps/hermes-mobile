@@ -5,7 +5,9 @@ import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { tokens } from '@/constants/tokens';
+import { ChatProvider } from '@/lib/chat/ChatProvider';
 import { GatewayProvider, useGateway } from '@/lib/gateway';
+import { PromptHost } from '@/components/chat/PromptHost';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -26,7 +28,9 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ThemeProvider value={DarkTheme}>
         <GatewayProvider>
-          <Gate />
+          <ChatProvider>
+            <Gate />
+          </ChatProvider>
         </GatewayProvider>
       </ThemeProvider>
     </SafeAreaProvider>
@@ -52,15 +56,18 @@ function Gate() {
   if (phase === 'loading') return null;
 
   return (
-    <Stack
-      screenOptions={{
-        headerStyle: { backgroundColor: tokens.bg },
-        headerTintColor: tokens.text,
-        headerShadowVisible: false,
-        contentStyle: { backgroundColor: tokens.bg },
-      }}>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="connect" options={{ headerShown: false }} />
-    </Stack>
+    <>
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: tokens.bg },
+          headerTintColor: tokens.text,
+          headerShadowVisible: false,
+          contentStyle: { backgroundColor: tokens.bg },
+        }}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="connect" options={{ headerShown: false }} />
+      </Stack>
+      <PromptHost />
+    </>
   );
 }

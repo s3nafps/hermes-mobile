@@ -18,9 +18,14 @@ export class GatewayHttpError extends Error {
   }
 }
 
-// Cookies carry the login session on native too, so credentials are included.
-export function createGatewayHttp(baseUrl: string): GatewayHttp {
-  return createClient<paths>({ baseUrl, credentials: 'include' });
+// Gated gateways authenticate with the session cookie. An open (loopback) gateway
+// takes the per-process token as a bearer header instead, the same way its own page does.
+export function createGatewayHttp(baseUrl: string, bearerToken?: string): GatewayHttp {
+  return createClient<paths>({
+    baseUrl,
+    credentials: 'include',
+    headers: bearerToken ? { Authorization: `Bearer ${bearerToken}` } : undefined,
+  });
 }
 
 // Normalises user input such as "hermes.local:9119" or "https://x.ts.net/" into

@@ -109,13 +109,17 @@ export function GatewayProvider({ children }: { children: ReactNode }) {
       setError(null);
       setStatus(null);
 
-      const client = createGatewayHttp(profile.baseUrl);
-      setHttp(client);
+      const probe = createGatewayHttp(profile.baseUrl);
 
       try {
-        const info = unwrap(await client.GET('/api/status')) as unknown as GatewayStatus;
+        const info = unwrap(await probe.GET('/api/status')) as unknown as GatewayStatus;
         if (!isCurrent()) return;
         setStatus(info);
+
+        // An open gateway hands out its per-process token on its page. Gated gateways use cookies and tickets.
+        const token = info.auth_required ? undefined : await loopbackToken(profile.baseUrl);
+        const client = createGatewayHttp(profile.baseUrl, token);
+        setHttp(client);
 
         if (info.auth_required) {
           // A signed-in cookie is only valid while the server accepts it.
@@ -143,8 +147,7 @@ export function GatewayProvider({ children }: { children: ReactNode }) {
               const ticket = unwrap(await client.POST('/api/auth/ws-ticket')) as unknown as { ticket: string };
               return toWebSocketUrl(profile.baseUrl, '/api/ws', { ticket: ticket.ticket });
             }
-            const token = await loopbackToken(profile.baseUrl);
-            return toWebSocketUrl(profile.baseUrl, '/api/ws', { token });
+            return toWebSocketUrl(profile.baseUrl, '/api/ws', { token: token ?? '' });
           },
           onAuthFailure: () => {
             authFailed = true;

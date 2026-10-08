@@ -1,4 +1,4 @@
-import * as SecureStore from 'expo-secure-store';
+import { getItem, setItem } from './storage';
 
 // A saved gateway. Only the address and a label are stored. Session cookies live
 // in the platform cookie store, and passwords are never persisted.
@@ -21,7 +21,7 @@ function emptyStore(): Stored {
 
 export async function loadStored(): Promise<Stored> {
   try {
-    const raw = await SecureStore.getItemAsync(STORE_KEY);
+    const raw = await getItem(STORE_KEY);
     if (!raw) return emptyStore();
     const parsed = JSON.parse(raw) as Partial<Stored>;
     return {
@@ -35,7 +35,7 @@ export async function loadStored(): Promise<Stored> {
 }
 
 export async function saveStored(stored: Stored): Promise<void> {
-  await SecureStore.setItemAsync(STORE_KEY, JSON.stringify(stored));
+  await setItem(STORE_KEY, JSON.stringify(stored));
 }
 
 export function newProfileId(): string {

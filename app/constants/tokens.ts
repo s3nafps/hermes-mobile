@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 // Design tokens from design/canvas (Hermes Mobile v1, dark theme only).
 export const tokens = {
   bg: '#0B0D10',
@@ -13,3 +15,6 @@ export const tokens = {
   danger: '#F0736B',
   info: '#7AA7F0',
 } as const;
+
+// Monospace family for commands, paths and logs. Each platform has its own name.
+export const MONO = Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }) as string;

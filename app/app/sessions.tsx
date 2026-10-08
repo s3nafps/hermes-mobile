@@ -1,5 +1,5 @@
-import { Stack, router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { Stack, router, useFocusEffect } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
 import { Alert, Text, TextInput, View } from 'react-native';
 
 import { tokens } from '@/constants/tokens';
@@ -38,6 +38,14 @@ export default function SessionsScreen() {
     if (!rpc) throw new Error('Not connected to the gateway.');
     await rpc.call('session.delete', { session_id: id });
   });
+
+  // Reload when the screen comes back into focus, so renames and new messages show up.
+  const { refetch } = list;
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
   const sessions = useMemo(() => {
     const all = list.data?.sessions ?? [];

@@ -1,6 +1,8 @@
+import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from 'react-native';
 
+import { ModelSheet } from '@/components/chat/ModelSheet';
 import { MONO, tokens } from '@/constants/tokens';
 import { useChat } from '@/lib/chat/ChatProvider';
 import type { ChatItem } from '@/lib/chat/reducer';
@@ -15,6 +17,7 @@ export function ChatView({ liveId }: { liveId: string }) {
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [modelOpen, setModelOpen] = useState(false);
   const listRef = useRef<FlatList<ChatItem>>(null);
 
   useEffect(() => {
@@ -55,8 +58,42 @@ export function ChatView({ liveId }: { liveId: string }) {
     }
   };
 
+  const storedKey = session.storedKey;
+
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={88}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: tokens.line }}>
+        <Pressable
+          onPress={() => setModelOpen(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Choose model and reasoning"
+          style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Text numberOfLines={1} style={{ color: tokens.textMuted, fontSize: 13, flexShrink: 1 }}>
+            {session.model || 'Choose a model'}
+          </Text>
+          <Text style={{ color: tokens.accent, fontSize: 13 }}>Change</Text>
+        </Pressable>
+        {storedKey ? (
+          <Pressable
+            onPress={() => router.push(`/session/${encodeURIComponent(storedKey)}`)}
+            accessibilityRole="link"
+            accessibilityLabel="Open chat details"
+            style={{ paddingVertical: 4 }}>
+            <Text style={{ color: tokens.accent, fontSize: 13, fontWeight: '600' }}>Details</Text>
+          </Pressable>
+        ) : null}
+      </View>
+      <ModelSheet
+        key={liveId}
+        visible={modelOpen}
+        onClose={() => setModelOpen(false)}
+        liveId={liveId}
+        model={session.model}
+        provider={session.provider}
+        running={session.running}
+        reasoning={session.reasoningEffort || null}
+      />
+
       <FlatList
         ref={listRef}
         data={data}

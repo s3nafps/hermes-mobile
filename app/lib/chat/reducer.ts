@@ -16,6 +16,7 @@ export type LiveSession = {
   provider: string;
   cwd: string;
   approvalMode: string;
+  reasoningEffort: string;
   yolo: boolean;
   usage: Usage | null;
   running: boolean;
@@ -95,6 +96,7 @@ function blankSession(liveId: string): LiveSession {
     provider: '',
     cwd: '',
     approvalMode: 'manual',
+    reasoningEffort: '',
     yolo: false,
     usage: null,
     running: false,
@@ -139,6 +141,7 @@ function sessionInfoPatch(session: LiveSession, info: Partial<SessionInfo>): Liv
     provider: info.provider ?? session.provider,
     cwd: info.cwd ?? session.cwd,
     approvalMode: info.approval_mode ?? session.approvalMode,
+    reasoningEffort: info.reasoning_effort ?? session.reasoningEffort,
     yolo: info.yolo ?? session.yolo,
     title: info.title ?? session.title,
     storedKey: info.stored_session_id || session.storedKey,

@@ -53,7 +53,9 @@ function Gate() {
     if (!onConnect) router.replace('/connect');
   }, [phase, onConnect]);
 
-  if (phase === 'loading') return null;
+  // Screens assume a connected gateway, so nothing mounts until the handshake finishes.
+  // The connect screen is the only route that renders while connecting.
+  if (phase === 'loading' || (phase === 'connecting' && !onConnect)) return null;
 
   return (
     <>

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Session detail</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#0B0D10;color:#ECEAE4;font-family:'IBM Plex Sans',system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden;position:relative">
+  <div style="padding:22px 16px 12px;display:flex;align-items:center;gap:10px">
+    <button type="button" style="height:44px;padding:0 10px;background:none;border:0;color:#E8B04B;font:500 15px 'IBM Plex Sans',sans-serif">‹ Sessions</button>
+    <div style="flex:1"></div>
+    <button type="button" aria-label="More session actions" aria-haspopup="menu" aria-expanded="true" style="width:44px;height:44px;border-radius:12px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font-size:20px;letter-spacing:1px">···</button>
+  </div>
+
+  <div style="padding:0 20px 14px">
+    <div style="font-size:22px;font-weight:600">Refactor auth middleware</div>
+    <div style="font-size:13px;color:#A9AEB8;margin-top:6px;line-height:1.5">App · web-app · started Mon 09:12 · 41 turns · 182k tokens</div>
+  </div>
+
+  <div style="flex:1;min-height:0;overflow:hidden;padding:0 20px;display:flex;flex-direction:column;gap:12px">
+    <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8">HISTORY · TURN 41</div>
+    <div style="align-self:flex-end;max-width:80%;background:#1C2029;border-radius:14px 14px 4px 14px;padding:10px 13px;font-size:14px">Refactor the auth middleware and open a PR when the tests pass.</div>
+    <div style="background:#0F1217;border:1px solid #2A2F3A;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#A9AEB8"><span style="font-family:'IBM Plex Mono',monospace;color:#ECEAE4">read_file</span><span>expanded · 214 lines</span></div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#A9AEB8;line-height:1.5">src/auth/middleware.ts<br>export function authenticate(req) {…}</div>
+    </div>
+    <div style="font-size:13px;color:#D7D3C8;line-height:1.5">Moved the token check into one helper. Three call sites updated.</div>
+
+    <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8;margin-top:6px">CHECKPOINTS</div>
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #2A2F3A">
+        <div><div style="font-size:14px">Before edit · middleware.ts</div><div style="font-size:12px;color:#A9AEB8">10:42</div></div>
+        <button type="button" style="height:40px;padding:0 12px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Roll back</button>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #2A2F3A">
+        <div><div style="font-size:14px">Before npm install</div><div style="font-size:12px;color:#A9AEB8">10:31</div></div>
+        <button type="button" style="height:40px;padding:0 12px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Roll back</button>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px">
+        <div><div style="font-size:14px">Session start</div><div style="font-size:12px;color:#A9AEB8">09:12</div></div>
+        <button type="button" style="height:40px;padding:0 12px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Roll back</button>
+      </div>
+    </div>
+    <div style="font-size:12px;color:#A9AEB8;line-height:1.5">Rolling back restores the files from that checkpoint. The conversation stays as it is.</div>
+  </div>
+
+  <div role="menu" aria-label="Session actions" style="position:absolute;top:66px;right:16px;width:220px;background:#1C2029;border:1px solid #2A2F3A;border-radius:14px;padding:6px;display:flex;flex-direction:column;box-shadow:0 12px 30px rgba(0,0,0,.5);z-index:2">
+    <button type="button" role="menuitem" style="height:46px;padding:0 12px;text-align:left;background:none;border:0;border-radius:10px;color:#ECEAE4;font:400 15px 'IBM Plex Sans',sans-serif">Rename</button>
+    <button type="button" role="menuitem" style="height:46px;padding:0 12px;text-align:left;background:none;border:0;border-radius:10px;color:#ECEAE4;font:400 15px 'IBM Plex Sans',sans-serif">Export as JSON</button>
+    <button type="button" role="menuitem" style="height:46px;padding:0 12px;text-align:left;background:none;border:0;border-radius:10px;color:#F0736B;font:500 15px 'IBM Plex Sans',sans-serif">Delete session</button>
+  </div>
+
+  <div style="padding:12px 20px 28px;border-top:1px solid #2A2F3A;background:#14171C">
+    <button type="button" style="width:100%;height:50px;border-radius:12px;background:#E8B04B;color:#1A1408;border:0;font:600 15px 'IBM Plex Sans',sans-serif">Open in chat</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Chat</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#0B0D10;color:#ECEAE4;font-family:'IBM Plex Sans',system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden">
+  <div style="padding:22px 18px 12px;display:flex;align-items:center;gap:12px">
+    <div aria-hidden="true" style="width:38px;height:38px;border-radius:50%;background:#E8B04B;color:#1A1408;display:flex;align-items:center;justify-content:center;font-weight:700">H</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:17px;font-weight:600">Hermes</div>
+      <div style="font-size:12px;color:#A9AEB8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">web-app · Default bot · YOLO off</div>
+    </div>
+    <button type="button" style="height:44px;padding:0 14px;border-radius:12px;background:#1C2029;color:#ECEAE4;border:1px solid #2A2F3A;font:500 14px 'IBM Plex Sans',sans-serif">Sessions</button>
+  </div>
+  <div aria-label="Context used 42 percent" style="height:3px;margin:0 18px 10px;background:#2A2F3A;border-radius:2px"><div style="width:42%;height:3px;background:#E8B04B;border-radius:2px"></div></div>
+
+  <div style="flex:1;min-height:0;overflow:hidden;padding:4px 16px 0;display:flex;flex-direction:column;gap:14px">
+    <div style="align-self:flex-end;max-width:82%;background:#1C2029;border-radius:16px 16px 4px 16px;padding:11px 14px;font-size:15px;line-height:1.45">Refactor the auth middleware and open a PR when the tests pass.</div>
+
+    <div style="font-size:15px;line-height:1.5;color:#ECEAE4">I'll read the middleware and find every call site before changing anything.</div>
+
+    <div style="background:#0F1217;border:1px solid #2A2F3A;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#A9AEB8">
+        <span style="font-family:'IBM Plex Mono',monospace">terminal</span>
+        <span style="display:flex;align-items:center;gap:6px;color:#4FC3B5"><span style="width:7px;height:7px;border-radius:50%;background:#4FC3B5"></span>Running · 2.1 s</span>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#D7D3C8">rg -n "authenticate" src/</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#A9AEB8;line-height:1.6">src/auth/middleware.ts:14<br>src/routes/api.ts:52</div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#A9AEB8"><span style="font-family:'IBM Plex Mono',monospace;background:#1C2029;border-radius:8px;padding:5px 9px;color:#ECEAE4">read_file</span>src/auth/middleware.ts · done</div>
+
+    <div style="font-size:15px;line-height:1.5">Found 3 call sites. Moving the token check into one helper now<span aria-hidden="true" style="display:inline-block;width:2px;height:16px;background:#E8B04B;vertical-align:-3px;margin-left:3px"></span></div>
+  </div>
+
+  <div style="padding:10px 16px 0;display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;background:#14171C;border:1px solid #2A2F3A;border-radius:12px;padding:8px 10px;font-size:13px;color:#A9AEB8">
+      <span>Subagents · 2 running</span>
+      <span style="display:flex;gap:6px"><button type="button" style="height:36px;padding:0 10px;border-radius:9px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 12px 'IBM Plex Sans',sans-serif">Steer</button><button type="button" style="height:36px;padding:0 10px;border-radius:9px;background:transparent;border:1px solid #F0736B;color:#F0736B;font:500 12px 'IBM Plex Sans',sans-serif">Stop</button></span>
+    </div>
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:10px 12px;font-size:13px;display:flex;flex-direction:column;gap:6px">
+      <div style="color:#A9AEB8">Plan · 2 of 4 done</div>
+      <div>✓&nbsp; Read middleware and tests</div>
+      <div style="color:#E8B04B">● Update call sites</div>
+      <div style="color:#A9AEB8">○ Run test suite</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <span style="font-size:12px;color:#A9AEB8;border:1px solid #2A2F3A;border-radius:999px;padding:6px 11px">Model · Nous Portal</span>
+      <span style="font-size:12px;color:#A9AEB8;border:1px solid #2A2F3A;border-radius:999px;padding:6px 11px">Reasoning · Medium</span>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:8px;background:#14171C;border:1px solid #2A2F3A;border-radius:16px;padding:8px">
+      <button type="button" aria-label="Attach file" style="width:44px;height:44px;border-radius:12px;background:#1C2029;border:0;color:#ECEAE4;font-size:20px">+</button>
+      <div style="flex:1;min-height:44px;display:flex;align-items:center;color:#7A8090;font-size:15px">Message Hermes…</div>
+      <button type="button" aria-label="Dictate" style="width:44px;height:44px;border-radius:12px;background:#1C2029;border:0;color:#ECEAE4;font-size:14px">Mic</button>
+      <button type="button" aria-label="Send" style="width:44px;height:44px;border-radius:12px;background:#E8B04B;border:0;color:#1A1408;font-size:18px;font-weight:700">↑</button>
+    </div>
+  </div>
+
+  <nav aria-label="Main" style="display:flex;justify-content:space-around;align-items:center;height:84px;box-sizing:border-box;padding:10px 6px 24px;background:#14171C;border-top:1px solid #2A2F3A;flex-shrink:0;margin-top:10px">
+    <button type="button" style="background:none;border:0;font:600 12px 'IBM Plex Sans',sans-serif;color:#E8B04B;padding:8px 10px;min-width:56px">Chat</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Bots</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Inbox</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Tasks</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Control</button>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

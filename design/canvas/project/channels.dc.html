@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Channels</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#0B0D10;color:#ECEAE4;font-family:'IBM Plex Sans',system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden">
+  <div style="padding:22px 16px 10px">
+    <button type="button" style="height:40px;padding:0 6px;background:none;border:0;color:#E8B04B;font:500 15px 'IBM Plex Sans',sans-serif">‹ Control</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;gap:10px">
+      <div style="font-size:24px;font-weight:600">Channels</div>
+      <button type="button" style="height:44px;padding:0 12px;border-radius:12px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Restart gateway</button>
+    </div>
+    <div style="font-size:13px;color:#A9AEB8;margin-top:6px">Gateway running · 2 connected · 1 needs setup</div>
+  </div>
+
+  <div style="flex:1;min-height:0;overflow:auto;padding:4px 20px 20px;display:flex;flex-direction:column;gap:10px">
+    <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8">CONNECTED</div>
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-size:15px;font-weight:600">Telegram</div><div style="font-size:12px;color:#7BD389">Connected · Ops bot</div></div><span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#E8B04B;position:relative"><span style="position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#1A1408"></span></span></div>
+      <button type="button" style="height:40px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Test connection</button>
+    </div>
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-size:15px;font-weight:600">Discord</div><div style="font-size:12px;color:#7BD389">Connected · #releases</div></div><span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#E8B04B;position:relative"><span style="position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#1A1408"></span></span></div>
+      <button type="button" style="height:40px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Test connection</button>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8;margin-top:6px">NEEDS SETUP</div>
+    <div style="background:#14171C;border:1px solid #E8B04B;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-size:15px;font-weight:600">Slack</div><div style="font-size:12px;color:#E8B04B">Missing bot token</div></div><button type="button" style="height:40px;padding:0 14px;border-radius:10px;background:#E8B04B;border:0;color:#1A1408;font:600 13px 'IBM Plex Sans',sans-serif">Configure</button></div>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8;margin-top:6px">AVAILABLE</div>
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;display:flex;flex-direction:column;font-size:15px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>WhatsApp</span><span style="color:#A9AEB8;font-size:13px">Set up ›</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>Signal</span><span style="color:#A9AEB8;font-size:13px">Set up ›</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>Matrix</span><span style="color:#A9AEB8;font-size:13px">Set up ›</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>Email</span><span style="color:#A9AEB8;font-size:13px">Set up ›</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>Microsoft Teams</span><span style="color:#A9AEB8;font-size:13px">Set up ›</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px"><span>Google Chat</span><span style="color:#A9AEB8;font-size:13px">Set up ›</span></div>
+    </div>
+    <div style="font-size:13px;color:#A9AEB8;text-align:center">+ 16 more platforms in the list</div>
+
+    <div style="font-size:12px;color:#A9AEB8;line-height:1.5">Credentials are stored on the gateway, not on this phone. Test checks that the platform connection is live.</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

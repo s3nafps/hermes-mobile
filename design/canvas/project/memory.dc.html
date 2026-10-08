@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Memory</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#0B0D10;color:#ECEAE4;font-family:'IBM Plex Sans',system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden">
+  <div style="padding:22px 16px 10px">
+    <button type="button" style="height:40px;padding:0 6px;background:none;border:0;color:#E8B04B;font:500 15px 'IBM Plex Sans',sans-serif">‹ Control</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;gap:10px">
+      <div style="font-size:24px;font-weight:600">Memory</div>
+      <button type="button" style="height:40px;padding:0 12px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Scope: Default ▾</button>
+    </div>
+  </div>
+
+  <div style="padding:0 20px 10px;display:flex;flex-direction:column;gap:10px">
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:12px 14px;font-size:13px;color:#A9AEB8;line-height:1.6">
+      <span style="color:#ECEAE4;font-weight:600">48 entries</span> · built-in memory<br>User model (Honcho) <span style="color:#7BD389">on</span>
+    </div>
+    <label for="mq" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Search memory</label>
+    <input id="mq" type="search" placeholder="Search memory" style="height:44px;box-sizing:border-box;border-radius:12px;border:1px solid #2A2F3A;background:#14171C;color:#ECEAE4;padding:0 14px;font:400 14px 'IBM Plex Sans',sans-serif">
+  </div>
+
+  <div style="flex:1;min-height:0;overflow:auto;padding:0 20px 20px;display:flex;flex-direction:column;gap:10px">
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;gap:10px">
+      <div><div style="font-size:14px;line-height:1.45">Prefers pnpm over npm in this repo</div><div style="font-size:12px;color:#A9AEB8;margin-top:4px">From web-app · 3 days ago</div></div>
+      <button type="button" aria-label="Delete memory entry" style="width:44px;height:44px;flex-shrink:0;border-radius:10px;background:transparent;border:1px solid #3A4150;color:#F0736B;font-size:16px">×</button>
+    </div>
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;gap:10px">
+      <div><div style="font-size:14px;line-height:1.45">Staging database is Postgres 16</div><div style="font-size:12px;color:#A9AEB8;margin-top:4px">From web-app · last week</div></div>
+      <button type="button" aria-label="Delete memory entry" style="width:44px;height:44px;flex-shrink:0;border-radius:10px;background:transparent;border:1px solid #3A4150;color:#F0736B;font-size:16px">×</button>
+    </div>
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;gap:10px">
+      <div><div style="font-size:14px;line-height:1.45">Release notes use grouped paragraphs</div><div style="font-size:12px;color:#A9AEB8;margin-top:4px">From Release crew · yesterday</div></div>
+      <button type="button" aria-label="Delete memory entry" style="width:44px;height:44px;flex-shrink:0;border-radius:10px;background:transparent;border:1px solid #3A4150;color:#F0736B;font-size:16px">×</button>
+    </div>
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;gap:10px">
+      <div><div style="font-size:14px;line-height:1.45">Ask before deleting anything in the build folder</div><div style="font-size:12px;color:#A9AEB8;margin-top:4px">You added this · today</div></div>
+      <button type="button" aria-label="Delete memory entry" style="width:44px;height:44px;flex-shrink:0;border-radius:10px;background:transparent;border:1px solid #3A4150;color:#F0736B;font-size:16px">×</button>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8;margin-top:8px">PERSONA AND CONTEXT</div>
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;display:flex;flex-direction:column;font-size:15px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>Persona (SOUL.md)</span><span style="color:#A9AEB8;font-size:13px">Edit ›</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>Context files</span><span style="color:#A9AEB8;font-size:13px">2 found ›</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px"><span>Memory provider</span><span style="color:#A9AEB8;font-size:13px">Built-in + Honcho ›</span></div>
+    </div>
+    <div style="font-size:12px;color:#A9AEB8;line-height:1.5">The memory graph view is on the desktop app. Entries saved by the agent show their source session.</div>
+  </div>
+
+  <nav aria-label="Main" style="display:flex;justify-content:space-around;align-items:center;height:84px;box-sizing:border-box;padding:10px 6px 24px;background:#14171C;border-top:1px solid #2A2F3A;flex-shrink:0">
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Chat</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Bots</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Inbox</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Tasks</button>
+    <button type="button" style="background:none;border:0;font:600 12px 'IBM Plex Sans',sans-serif;color:#E8B04B;padding:8px 10px;min-width:56px">Control</button>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

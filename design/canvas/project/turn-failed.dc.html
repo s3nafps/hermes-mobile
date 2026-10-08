@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Turn failed</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#0B0D10;color:#ECEAE4;font-family:'IBM Plex Sans',system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden">
+  <div style="padding:22px 18px 12px;display:flex;align-items:center;gap:12px">
+    <div aria-hidden="true" style="width:38px;height:38px;border-radius:50%;background:#E8B04B;color:#1A1408;display:flex;align-items:center;justify-content:center;font-weight:700">H</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:17px;font-weight:600">Hermes</div>
+      <div style="font-size:12px;color:#A9AEB8">web-app · Default bot</div>
+    </div>
+    <button type="button" style="height:44px;padding:0 14px;border-radius:12px;background:#1C2029;color:#ECEAE4;border:1px solid #2A2F3A;font:500 14px 'IBM Plex Sans',sans-serif">Sessions</button>
+  </div>
+
+  <div style="flex:1;min-height:0;overflow:hidden;padding:8px 16px 0;display:flex;flex-direction:column;gap:14px">
+    <div style="align-self:flex-end;max-width:82%;background:#1C2029;border-radius:16px 16px 4px 16px;padding:11px 14px;font-size:15px;line-height:1.45">Refactor the auth middleware and open a PR when the tests pass.</div>
+
+    <div role="alert" style="background:#1F1719;border:1px solid #F0736B;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px">
+      <div>
+        <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#F7A39D">TURN FAILED · PROVIDER</div>
+        <div style="font-size:17px;font-weight:600;margin-top:4px">The model provider is overloaded</div>
+        <div style="font-size:14px;color:#D7D3C8;line-height:1.5;margin-top:6px">It returned an overload error after 3 retries. Output from earlier tool calls is kept above.</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button type="button" style="height:46px;border-radius:12px;background:#E8B04B;color:#1A1408;border:0;font:600 14px 'IBM Plex Sans',sans-serif">Retry</button>
+        <button type="button" style="height:46px;border-radius:12px;background:#1C2029;color:#ECEAE4;border:1px solid #2A2F3A;font:500 14px 'IBM Plex Sans',sans-serif">Switch provider</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <button type="button" style="height:40px;padding:0 12px;border-radius:10px;background:transparent;color:#A9AEB8;border:1px solid #3A4150;font:500 13px 'IBM Plex Sans',sans-serif">Open logs</button>
+        <button type="button" style="height:40px;padding:0 12px;border-radius:10px;background:transparent;color:#A9AEB8;border:1px solid #3A4150;font:500 13px 'IBM Plex Sans',sans-serif">Send diagnostics</button>
+        <button type="button" style="height:40px;padding:0 12px;border-radius:10px;background:transparent;color:#A9AEB8;border:1px solid #3A4150;font:500 13px 'IBM Plex Sans',sans-serif">Copy error details</button>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#A9AEB8;background:#0F1217;border-radius:10px;padding:10px;line-height:1.6">provider=nous-portal<br>status=overloaded attempts=3<br>session=web-app turn=41</div>
+    </div>
+  </div>
+
+  <div style="padding:10px 16px 12px;display:flex;align-items:center;gap:8px;background:#14171C;border-top:1px solid #2A2F3A">
+    <button type="button" aria-label="Attach file" style="width:44px;height:44px;border-radius:12px;background:#1C2029;border:0;color:#ECEAE4;font-size:20px">+</button>
+    <div style="flex:1;height:44px;display:flex;align-items:center;color:#7A8090;font-size:15px;background:#0F1217;border:1px solid #2A2F3A;border-radius:12px;padding:0 12px">Message Hermes…</div>
+    <button type="button" aria-label="Send" style="width:44px;height:44px;border-radius:12px;background:#E8B04B;border:0;color:#1A1408;font-size:18px;font-weight:700">↑</button>
+  </div>
+
+  <nav aria-label="Main" style="display:flex;justify-content:space-around;align-items:center;height:84px;box-sizing:border-box;padding:10px 6px 24px;background:#14171C;border-top:1px solid #2A2F3A;flex-shrink:0">
+    <button type="button" style="background:none;border:0;font:600 12px 'IBM Plex Sans',sans-serif;color:#E8B04B;padding:8px 10px;min-width:56px">Chat</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Bots</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Inbox</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Tasks</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Control</button>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

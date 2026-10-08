@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bot profile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#0B0D10;color:#ECEAE4;font-family:'IBM Plex Sans',system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden">
+  <div style="padding:22px 16px 10px;display:flex;justify-content:space-between;align-items:center">
+    <button type="button" style="height:44px;padding:0 6px;background:none;border:0;color:#E8B04B;font:500 15px 'IBM Plex Sans',sans-serif">‹ Bots</button>
+    <div style="font-size:17px;font-weight:600">Atlas</div>
+    <button type="button" style="height:44px;padding:0 14px;border-radius:12px;background:#E8B04B;color:#1A1408;border:0;font:600 14px 'IBM Plex Sans',sans-serif">Save</button>
+  </div>
+
+  <div style="flex:1;min-height:0;overflow:auto;padding:4px 20px 24px;display:flex;flex-direction:column;gap:14px">
+    <div>
+      <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8;margin-bottom:8px">AVATAR</div>
+      <div role="group" aria-label="Avatar style" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px">
+        <button type="button" aria-label="Blob face" aria-pressed="false" style="height:58px;border-radius:12px;background:#1C2029;border:1px solid #2A2F3A;display:flex;align-items:center;justify-content:center"><span aria-hidden="true" style="width:26px;height:24px;border-radius:50% 50% 45% 55%;background:#A9AEB8"></span></button>
+        <button type="button" aria-label="Geometric shape" aria-pressed="true" style="height:58px;border-radius:12px;background:#1C2029;border:1px solid #E8B04B;display:flex;align-items:center;justify-content:center"><span aria-hidden="true" style="width:26px;height:26px;border-radius:6px;background:#4FC3B5"></span></button>
+        <button type="button" aria-label="Upload image" aria-pressed="false" style="height:58px;border-radius:12px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 12px 'IBM Plex Sans',sans-serif">Upload</button>
+        <button type="button" aria-label="AI portrait" aria-pressed="false" style="height:58px;border-radius:12px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 12px 'IBM Plex Sans',sans-serif">Portrait</button>
+        <button type="button" aria-label="Pixel pet" aria-pressed="false" style="height:58px;border-radius:12px;background:#1C2029;border:1px solid #2A2F3A;display:flex;align-items:center;justify-content:center"><span aria-hidden="true" style="display:grid;grid-template-columns:repeat(3,6px);gap:2px"><span style="height:6px;background:#E8B04B"></span><span style="height:6px"></span><span style="height:6px;background:#E8B04B"></span><span style="height:6px;background:#E8B04B;grid-column:1/4"></span><span style="height:6px;background:#E8B04B;grid-column:1/4"></span></span></button>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <label for="bp-name" style="font-size:13px;color:#A9AEB8">Name</label>
+      <input id="bp-name" type="text" value="Atlas" style="height:46px;box-sizing:border-box;border-radius:12px;border:1px solid #3A4150;background:#0F1217;color:#ECEAE4;padding:0 14px;font:400 15px 'IBM Plex Sans',sans-serif">
+      <label for="bp-title" style="font-size:13px;color:#A9AEB8">Title</label>
+      <input id="bp-title" type="text" value="Coding agent" style="height:46px;box-sizing:border-box;border-radius:12px;border:1px solid #3A4150;background:#0F1217;color:#ECEAE4;padding:0 14px;font:400 15px 'IBM Plex Sans',sans-serif">
+    </div>
+
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;display:flex;flex-direction:column;font-size:15px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>Model &amp; provider</span><span style="color:#A9AEB8;font-size:13px">Inherited ›</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>Persona (SOUL.md)</span><span style="color:#A9AEB8;font-size:13px">Edit ›</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>Skills</span><span style="color:#A9AEB8;font-size:13px">8 enabled ›</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>Toolsets</span><span style="color:#A9AEB8;font-size:13px">Terminal, web, files ›</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>MCP servers</span><span style="color:#A9AEB8;font-size:13px">2 enabled ›</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>Voice</span><span style="color:#A9AEB8;font-size:13px">Calm ›</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>Memory</span><span style="color:#A9AEB8;font-size:13px">48 entries ›</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px"><span>Routines</span><span style="color:#A9AEB8;font-size:13px">2 scheduled ›</span></div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;font-size:14px">
+      <div><div>Default bot</div><div style="font-size:12px;color:#A9AEB8;line-height:1.5">Used when no bot is named in the CLI or a gateway.</div></div>
+      <span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#2A2F3A;position:relative"><span style="position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#A9AEB8"></span></span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px">
+      <span>Hide from roster</span>
+      <span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#2A2F3A;position:relative"><span style="position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#A9AEB8"></span></span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px">
+      <button type="button" style="height:46px;border-radius:12px;background:#1C2029;color:#ECEAE4;border:1px solid #2A2F3A;font:500 14px 'IBM Plex Sans',sans-serif">Duplicate</button>
+      <button type="button" style="height:46px;border-radius:12px;background:transparent;color:#F0736B;border:1px solid #F0736B;font:500 14px 'IBM Plex Sans',sans-serif">Delete profile</button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

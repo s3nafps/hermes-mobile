@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sessions</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#0B0D10;color:#ECEAE4;font-family:'IBM Plex Sans',system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden;position:relative">
+  <div style="padding:22px 20px 10px;display:flex;align-items:center;justify-content:space-between">
+    <div style="font-size:24px;font-weight:600">Sessions</div>
+    <button type="button" style="height:44px;padding:0 16px;border-radius:12px;background:#E8B04B;color:#1A1408;border:0;font:600 14px 'IBM Plex Sans',sans-serif">New</button>
+  </div>
+
+  <div style="padding:0 20px;display:flex;flex-direction:column;gap:10px">
+    <label for="q" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Search sessions</label>
+    <input id="q" type="search" placeholder="Search sessions and messages" style="height:46px;box-sizing:border-box;border-radius:12px;border:1px solid #2A2F3A;background:#14171C;color:#ECEAE4;padding:0 14px;font:400 15px 'IBM Plex Sans',sans-serif">
+    <div role="group" aria-label="Filter" style="display:flex;gap:8px">
+      <span style="font:600 13px 'IBM Plex Sans',sans-serif;color:#1A1408;background:#E8B04B;border-radius:999px;padding:7px 13px">All</span>
+      <span style="font:500 13px 'IBM Plex Sans',sans-serif;color:#A9AEB8;border:1px solid #2A2F3A;border-radius:999px;padding:7px 13px">Chats</span>
+      <span style="font:500 13px 'IBM Plex Sans',sans-serif;color:#A9AEB8;border:1px solid #2A2F3A;border-radius:999px;padding:7px 13px">Automation</span>
+    </div>
+    <div role="group" aria-label="Source" style="display:flex;gap:6px;overflow:hidden;white-space:nowrap">
+      <span style="font:500 12px 'IBM Plex Sans',sans-serif;color:#ECEAE4;border:1px solid #E8B04B;border-radius:999px;padding:5px 10px">All sources</span>
+      <span style="font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;border:1px solid #2A2F3A;border-radius:999px;padding:5px 10px">App</span>
+      <span style="font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;border:1px solid #2A2F3A;border-radius:999px;padding:5px 10px">Telegram</span>
+      <span style="font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;border:1px solid #2A2F3A;border-radius:999px;padding:5px 10px">Discord</span>
+      <span style="font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;border:1px solid #2A2F3A;border-radius:999px;padding:5px 10px">Cron</span>
+    </div>
+  </div>
+
+  <div style="flex:1;min-height:0;overflow:hidden;padding:14px 20px 0;display:flex;flex-direction:column;gap:8px">
+    <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8">PROJECT · WEB-APP · 3</div>
+
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:4px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <span style="font-size:15px;font-weight:600">Refactor auth middleware</span>
+        <span style="font-size:12px;color:#A9AEB8">now</span>
+      </div>
+      <div style="font-size:13px;color:#A9AEB8">Updating call sites · 2 of 4 steps</div>
+      <div style="display:flex;gap:8px;align-items:center;font-size:12px;color:#4FC3B5"><span style="width:7px;height:7px;border-radius:50%;background:#4FC3B5"></span>Running · App</div>
+    </div>
+
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:4px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <span style="font-size:15px;font-weight:600">Fix flaky login test</span>
+        <span style="font-size:12px;color:#A9AEB8">12 m</span>
+      </div>
+      <div style="font-size:13px;color:#A9AEB8">Waiting for your approval</div>
+      <div style="display:flex;gap:8px;align-items:center;font-size:12px;color:#E8B04B"><span style="width:7px;height:7px;border-radius:50%;background:#E8B04B"></span>Needs you · App</div>
+    </div>
+
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:4px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <span style="font-size:15px;font-weight:600">Parser bug triage</span>
+        <span style="font-size:12px;color:#A9AEB8">Yesterday</span>
+      </div>
+      <div style="font-size:13px;color:#A9AEB8">Reproduced on the 0.7 build</div>
+      <div style="font-size:12px;color:#A9AEB8">Discord</div>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8;margin-top:6px">UNGROUPED</div>
+
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:4px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <span style="font-size:15px;font-weight:600">Release notes draft</span>
+        <span style="font-size:12px;color:#A9AEB8">Mon</span>
+      </div>
+      <div style="font-size:13px;color:#A9AEB8">Telegram · Release crew</div>
+    </div>
+
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:4px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <span style="font-size:15px;font-weight:600">Daily briefing</span>
+        <span style="font-size:12px;color:#A9AEB8">08:00</span>
+      </div>
+      <div style="font-size:13px;color:#A9AEB8">Automation · cron output · delivered to Telegram</div>
+    </div>
+  </div>
+
+  <nav aria-label="Main" style="display:flex;justify-content:space-around;align-items:center;height:84px;box-sizing:border-box;padding:10px 6px 24px;background:#14171C;border-top:1px solid #2A2F3A;flex-shrink:0">
+    <button type="button" style="background:none;border:0;font:600 12px 'IBM Plex Sans',sans-serif;color:#E8B04B;padding:8px 10px;min-width:56px">Chat</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Bots</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Inbox</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Tasks</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Control</button>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

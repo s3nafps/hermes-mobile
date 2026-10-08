@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pairing and access</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#0B0D10;color:#ECEAE4;font-family:'IBM Plex Sans',system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden">
+  <div style="padding:22px 16px 10px">
+    <button type="button" style="height:40px;padding:0 6px;background:none;border:0;color:#E8B04B;font:500 15px 'IBM Plex Sans',sans-serif">‹ Control</button>
+    <div style="font-size:24px;font-weight:600;margin-top:4px">Pairing &amp; access</div>
+    <div style="font-size:13px;color:#A9AEB8;margin-top:6px;line-height:1.5">Messaging users must be approved before they can chat with your agents. Unknown users are denied by default.</div>
+  </div>
+
+  <div style="flex:1;min-height:0;overflow:auto;padding:4px 20px 20px;display:flex;flex-direction:column;gap:10px">
+    <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8">PENDING · 1</div>
+    <div style="background:#14171C;border:1px solid #E8B04B;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;justify-content:space-between;gap:10px"><div><div style="font-size:15px;font-weight:600">Telegram user 4421</div><div style="font-size:12px;color:#A9AEB8">Direct message · asked 6 min ago</div></div><span style="font-size:12px;color:#E8B04B;white-space:nowrap">42 min left</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;background:#0F1217;border:1px solid #2A2F3A;border-radius:10px;padding:10px 12px"><span style="font-size:12px;color:#A9AEB8">Code</span><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;letter-spacing:.08em">7XQ4R9KD</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <button type="button" style="height:44px;border-radius:10px;background:#E8B04B;border:0;color:#1A1408;font:600 13px 'IBM Plex Sans',sans-serif">Approve</button>
+        <button type="button" style="height:44px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Ignore</button>
+        <button type="button" style="height:44px;border-radius:10px;background:transparent;border:1px solid #F0736B;color:#F0736B;font:500 13px 'IBM Plex Sans',sans-serif">Decline</button>
+      </div>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8;margin-top:6px">APPROVED USERS</div>
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;display:flex;flex-direction:column;font-size:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #2A2F3A"><div><div>Telegram user 1187</div><div style="font-size:12px;color:#A9AEB8">Approved 3 days ago</div></div><button type="button" style="height:40px;padding:0 12px;border-radius:10px;background:transparent;border:1px solid #F0736B;color:#F0736B;font:500 13px 'IBM Plex Sans',sans-serif">Revoke</button></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px"><div><div>Discord user 9034</div><div style="font-size:12px;color:#A9AEB8">Approved last month</div></div><button type="button" style="height:40px;padding:0 12px;border-radius:10px;background:transparent;border:1px solid #F0736B;color:#F0736B;font:500 13px 'IBM Plex Sans',sans-serif">Revoke</button></div>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8;margin-top:6px">ACCESS RULES</div>
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;display:flex;flex-direction:column;font-size:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>Allow all users on Telegram</span><span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#2A2F3A;position:relative"><span style="position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#A9AEB8"></span></span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px"><span>Unknown users who DM</span><span style="color:#A9AEB8;font-size:13px">Ignore ›</span></div>
+    </div>
+    <div style="font-size:12px;color:#A9AEB8;line-height:1.5">Codes expire after one hour. Five failed approvals lock approvals for an hour. Codes are never shown in logs.</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Logs</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#0B0D10;color:#ECEAE4;font-family:'IBM Plex Sans',system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden">
+  <div style="padding:22px 16px 10px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <button type="button" style="height:40px;padding:0 6px;background:none;border:0;color:#E8B04B;font:500 15px 'IBM Plex Sans',sans-serif">‹ Control</button>
+      <div style="display:flex;gap:8px">
+        <button type="button" style="height:40px;padding:0 12px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Copy</button>
+        <button type="button" aria-pressed="true" style="height:40px;padding:0 12px;border-radius:10px;background:#E8B04B;border:0;color:#1A1408;font:600 13px 'IBM Plex Sans',sans-serif">Live</button>
+      </div>
+    </div>
+    <div style="font-size:24px;font-weight:600;margin-top:4px">Logs</div>
+  </div>
+
+  <div style="padding:0 20px 10px;display:flex;flex-direction:column;gap:10px">
+    <div role="tablist" aria-label="Log source" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;background:#0F1217;border:1px solid #2A2F3A;border-radius:12px;padding:4px">
+      <button type="button" role="tab" aria-selected="true" style="height:40px;border-radius:9px;background:#E8B04B;border:0;color:#1A1408;font:600 14px 'IBM Plex Sans',sans-serif">Agent</button>
+      <button type="button" role="tab" aria-selected="false" style="height:40px;border-radius:9px;background:transparent;border:0;color:#A9AEB8;font:500 14px 'IBM Plex Sans',sans-serif">Errors</button>
+      <button type="button" role="tab" aria-selected="false" style="height:40px;border-radius:9px;background:transparent;border:0;color:#A9AEB8;font:500 14px 'IBM Plex Sans',sans-serif">Gateway</button>
+    </div>
+    <div role="group" aria-label="Level" style="display:flex;gap:6px;flex-wrap:wrap">
+      <span style="font:500 12px 'IBM Plex Mono',monospace;color:#A9AEB8;border:1px solid #2A2F3A;border-radius:999px;padding:6px 10px">DEBUG</span>
+      <span style="font:600 12px 'IBM Plex Mono',monospace;color:#1A1408;background:#E8B04B;border-radius:999px;padding:6px 10px">INFO</span>
+      <span style="font:500 12px 'IBM Plex Mono',monospace;color:#A9AEB8;border:1px solid #2A2F3A;border-radius:999px;padding:6px 10px">WARN</span>
+      <span style="font:500 12px 'IBM Plex Mono',monospace;color:#A9AEB8;border:1px solid #2A2F3A;border-radius:999px;padding:6px 10px">ERROR</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <div style="flex:1;height:40px;display:flex;align-items:center;padding:0 12px;background:#14171C;border:1px solid #2A2F3A;border-radius:10px;font-size:13px;color:#ECEAE4">All components ▾</div>
+      <div style="height:40px;display:flex;align-items:center;padding:0 12px;background:#14171C;border:1px solid #2A2F3A;border-radius:10px;font-size:13px;color:#ECEAE4">200 lines ▾</div>
+    </div>
+  </div>
+
+  <div role="log" aria-live="off" aria-label="Agent log" style="flex:1;min-height:0;overflow:auto;margin:0 16px 16px;background:#0F1217;border:1px solid #2A2F3A;border-radius:12px;padding:10px 12px;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.7">
+    <div><span style="color:#7A8090">10:42:11</span> <span style="color:#A9AEB8">INFO </span> <span style="color:#7AA7F0">agent</span>    turn 41 started</div>
+    <div><span style="color:#7A8090">10:42:12</span> <span style="color:#A9AEB8">INFO </span> <span style="color:#7AA7F0">tool</span>     read_file src/auth/middleware.ts</div>
+    <div><span style="color:#7A8090">10:42:14</span> <span style="color:#E8B04B">WARN </span> <span style="color:#7AA7F0">tool</span>     terminal output truncated at 4 KB</div>
+    <div><span style="color:#7A8090">10:42:19</span> <span style="color:#A9AEB8">INFO </span> <span style="color:#7AA7F0">provider</span> stream open · model=default</div>
+    <div><span style="color:#7A8090">10:43:02</span> <span style="color:#F7A39D">ERROR</span> <span style="color:#7AA7F0">provider</span> 529 overloaded · retry 1 of 3</div>
+    <div><span style="color:#7A8090">10:43:08</span> <span style="color:#A9AEB8">INFO </span> <span style="color:#7AA7F0">gateway</span>  platform telegram reconnected</div>
+    <div><span style="color:#7A8090">10:43:09</span> <span style="color:#A9AEB8">INFO </span> <span style="color:#7AA7F0">agent</span>    turn 41 resumed</div>
+    <div><span style="color:#7A8090">10:43:21</span> <span style="color:#A9AEB8">INFO </span> <span style="color:#7AA7F0">approval</span> command approved once · session web-app</div>
+  </div>
+
+  <div style="padding:0 20px 24px;font-size:12px;color:#A9AEB8">Live · new lines every 2 seconds. Secrets are redacted in every log view.</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

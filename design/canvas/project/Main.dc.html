@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Overview</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width:1280px;height:960px;box-sizing:border-box;padding:48px 56px;background:#0B0D10;color:#ECEAE4;font-family:'IBM Plex Sans',system-ui,sans-serif;display:flex;flex-direction:column;gap:28px;overflow:hidden">
+  <div>
+    <div style="font-size:14px;color:#E8B04B;font-weight:600;letter-spacing:.02em">HERMES MOBILE · APP DESIGN v1</div>
+    <h1 style="margin:8px 0 0;font-size:44px;font-weight:600">One companion app for your Hermes agents</h1>
+    <p style="margin:10px 0 0;font-size:17px;color:#A9AEB8;max-width:900px;line-height:1.5">Chat-first. Approvals are always one tap away. The Hermes features that make sense on a phone each have a home in one of five tabs. Desktop-only views are listed in the coverage notes.</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px">
+    <section style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:20px;font-weight:600;color:#E8B04B">Chat</div>
+      <div style="font-size:13px;color:#A9AEB8">Home. Talk to the active Bot.</div>
+      <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.6">
+        <li>Streaming replies and live tool activity</li>
+        <li>Model, reasoning and fallback picker</li>
+        <li>Sessions, search and session history</li>
+        <li>Checkpoints and rollback</li>
+        <li>Review changes (git diffs, worktrees)</li>
+        <li>Voice mode, wake word, read-aloud</li>
+        <li>Artifacts and preview rail</li>
+        <li>Turn-failed recovery</li>
+      </ul>
+    </section>
+    <section style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:20px;font-weight:600;color:#E8B04B">Bots</div>
+      <div style="font-size:13px;color:#A9AEB8">Each Hermes profile is a Bot.</div>
+      <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.6">
+        <li>Roster with sections, search and active filter</li>
+        <li>New Bot with clone, model pin, SOUL.md</li>
+        <li>Bot profile: avatar, skills, toolsets, voice</li>
+        <li>Group chats of 2 to 6 Bots with @mentions</li>
+        <li>Bot-to-bot messages and "needs you" flags</li>
+      </ul>
+    </section>
+    <section style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:20px;font-weight:600;color:#E8B04B">Inbox</div>
+      <div style="font-size:13px;color:#A9AEB8">Everything waiting for you.</div>
+      <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.6">
+        <li>Command approvals with a visible timer</li>
+        <li>Agent questions (clarify)</li>
+        <li>Cron and routine output</li>
+        <li>Failed runs with retry</li>
+        <li>Group chat "needs you" items</li>
+        <li>Pairing requests from messaging users</li>
+      </ul>
+    </section>
+    <section style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:20px;font-weight:600;color:#E8B04B">Tasks</div>
+      <div style="font-size:13px;color:#A9AEB8">Work that runs on its own.</div>
+      <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.6">
+        <li>Cron jobs: list, editor, delivery target</li>
+        <li>Kanban board across profiles and lanes</li>
+        <li>Task drawer: deps, comments, attachments</li>
+        <li>Goals, recurring loops, heartbeats</li>
+        <li>Batch processing progress</li>
+      </ul>
+    </section>
+    <section style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:20px;font-weight:600;color:#E8B04B">Control</div>
+      <div style="font-size:13px;color:#A9AEB8">Everything else, grouped.</div>
+      <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.6">
+        <li>Gateways and gateway status</li>
+        <li>Memory, skills, toolsets, MCP</li>
+        <li>Channels, pairing, webhooks</li>
+        <li>Analytics, logs, config</li>
+        <li>Security, approval policy, API keys</li>
+        <li>Settings, updates, backup, doctor</li>
+      </ul>
+    </section>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:16px;flex:1;min-height:0">
+    <section style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:18px;font-weight:600">Decisions for you</div>
+      <ol style="margin:0;padding-left:20px;font-size:15px;line-height:1.6;color:#ECEAE4">
+        <li><b>Connection.</b> Hermes has no phone-pairing flow today. The design connects by gateway URL plus sign-in (Nous Portal, username and password on a trusted network or VPN, or Hermes Cloud). A QR pairing like OpenClaw's needs a new pairing endpoint on the Hermes side. Keep it out of v1, or add it?</li>
+        <li><b>Theme.</b> v1 is dark only. Hermes ships 8 desktop themes. Add a light theme, or map the app to Hermes themes later?</li>
+        <li><b>Device capabilities.</b> OpenClaw's phone nodes (camera, location, photos, screen) are not in Hermes. Not designed. Add them as a later phase?</li>
+        <li><b>Canvas.</b> Hermes has Artifacts, not a canvas. The design uses an Artifacts gallery with a preview rail.</li>
+        <li><b>Inbox as a tab.</b> Approvals time out after 300 seconds, so they get a tab of their own rather than a menu item.</li>
+      </ol>
+    </section>
+    <section style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:18px;font-weight:600">Sources</div>
+      <div style="font-size:14px;color:#A9AEB8;line-height:1.6">Feature list: Hermes Agent docs at hermes-agent.nousresearch.com/docs (features overview, web dashboard, Bot Mode, Relay, Kanban, security, desktop).</div>
+      <div style="font-size:14px;color:#A9AEB8;line-height:1.6">Companion-app patterns (pairing, chat, approvals, device nodes): OpenClaw docs at docs.openclaw.ai.</div>
+      <div style="font-size:14px;color:#A9AEB8;line-height:1.6">Screen count: 34 screens across 10 groups, each one a 390 × 844 phone frame. Sample data is placeholder only.</div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":960}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

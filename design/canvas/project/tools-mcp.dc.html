@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tools and MCP</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#0B0D10;color:#ECEAE4;font-family:'IBM Plex Sans',system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden">
+  <div style="padding:22px 16px 10px">
+    <button type="button" style="height:40px;padding:0 6px;background:none;border:0;color:#E8B04B;font:500 15px 'IBM Plex Sans',sans-serif">‹ Control</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;gap:10px">
+      <div style="font-size:24px;font-weight:600">Tools &amp; MCP</div>
+      <button type="button" style="height:44px;padding:0 14px;border-radius:12px;background:#E8B04B;color:#1A1408;border:0;font:600 14px 'IBM Plex Sans',sans-serif">+ Add server</button>
+    </div>
+  </div>
+
+  <div style="padding:0 20px 10px">
+    <label for="tq" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Find a tool</label>
+    <input id="tq" type="search" placeholder="Find a tool" style="height:44px;box-sizing:border-box;width:100%;border-radius:12px;border:1px solid #2A2F3A;background:#14171C;color:#ECEAE4;padding:0 14px;font:400 14px 'IBM Plex Sans',sans-serif">
+  </div>
+
+  <div style="flex:1;min-height:0;overflow:auto;padding:0 20px 20px;display:flex;flex-direction:column;gap:10px">
+    <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8">MCP SERVERS</div>
+
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-size:15px;font-weight:600;font-family:'IBM Plex Mono',monospace">filesystem</div><div style="font-size:12px;color:#A9AEB8">stdio · 7 tools · 5 allowed</div></div><span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#E8B04B;position:relative"><span style="position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#1A1408"></span></span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button type="button" style="height:40px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Test</button>
+        <button type="button" style="height:40px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Choose tools</button>
+      </div>
+    </div>
+
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-size:15px;font-weight:600;font-family:'IBM Plex Mono',monospace">github</div><div style="font-size:12px;color:#A9AEB8">HTTP · 12 tools · all allowed</div></div><span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#E8B04B;position:relative"><span style="position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#1A1408"></span></span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button type="button" style="height:40px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Test</button>
+        <button type="button" style="height:40px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Choose tools</button>
+      </div>
+    </div>
+
+    <div style="background:#14171C;border:1px solid #F0736B;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-size:15px;font-weight:600;font-family:'IBM Plex Mono',monospace">postgres</div><div style="font-size:12px;color:#A9AEB8">stdio · disabled</div></div><span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#2A2F3A;position:relative"><span style="position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#A9AEB8"></span></span></div>
+      <div style="font-size:12px;color:#F7A39D">Last test failed: connection refused</div>
+      <button type="button" style="height:40px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Test again</button>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8;margin-top:6px">NOUS-APPROVED CATALOG</div>
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;display:flex;flex-direction:column;font-size:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>Calendar</span><button type="button" style="height:40px;padding:0 14px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Install</button></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px"><span>Search index</span><button type="button" style="height:40px;padding:0 14px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Install</button></div>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8;margin-top:6px">PLUGINS</div>
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;display:flex;flex-direction:column;font-size:15px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>Plugin catalog</span><span style="color:#A9AEB8;font-size:13px">3 installed ›</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px"><span>Built-in plugins</span><span style="color:#A9AEB8;font-size:13px">Bots on ›</span></div>
+    </div>
+
+    <div style="font-size:12px;color:#A9AEB8;line-height:1.5">MCP servers run on the gateway host. Their secrets are never shown in the app.</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

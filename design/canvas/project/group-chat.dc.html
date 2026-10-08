@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Group chat</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#0B0D10;color:#ECEAE4;font-family:'IBM Plex Sans',system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden;position:relative">
+  <div style="padding:22px 16px 12px;display:flex;align-items:center;gap:12px">
+    <button type="button" style="height:44px;padding:0 6px;background:none;border:0;color:#E8B04B;font:500 15px 'IBM Plex Sans',sans-serif">‹</button>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:17px;font-weight:600">Release crew</div>
+      <div style="font-size:12px;color:#A9AEB8">3 members · up to 3 rounds per message</div>
+    </div>
+    <button type="button" style="height:44px;padding:0 12px;border-radius:12px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Members</button>
+  </div>
+
+  <div style="margin:0 16px 10px;display:flex;justify-content:space-between;align-items:center;gap:10px;background:#1F1A10;border:1px solid #E8B04B;border-radius:14px;padding:10px 12px">
+    <div style="font-size:13px;line-height:1.4"><b style="color:#E8B04B">Forge needs you</b><br><span style="color:#D7D3C8">Pick a changelog style to continue.</span></div>
+    <button type="button" style="height:40px;padding:0 12px;border-radius:10px;background:#E8B04B;color:#1A1408;border:0;font:600 13px 'IBM Plex Sans',sans-serif">Answer</button>
+  </div>
+
+  <div style="flex:1;min-height:0;overflow:hidden;padding:4px 16px 0;display:flex;flex-direction:column;gap:12px">
+    <div style="align-self:flex-end;max-width:82%;background:#1C2029;border-radius:16px 16px 4px 16px;padding:10px 13px;font-size:14px;line-height:1.45"><span style="color:#E8B04B">@Atlas</span> draft release notes from today's merged PRs</div>
+
+    <div style="display:flex;gap:10px;align-items:flex-start">
+      <div aria-hidden="true" style="width:30px;height:30px;border-radius:8px;background:#4FC3B5;flex-shrink:0"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;color:#A9AEB8;margin-bottom:3px">Atlas</div>
+        <div style="font-size:14px;line-height:1.5">Pulling merged PRs since Monday. Grouping them under features and fixes<span aria-hidden="true" style="display:inline-block;width:2px;height:14px;background:#E8B04B;vertical-align:-2px;margin-left:3px"></span></div>
+      </div>
+    </div>
+
+    <div style="align-self:center;font-size:12px;color:#A9AEB8;font-family:'IBM Plex Mono',monospace;border:1px dashed #3A4150;border-radius:999px;padding:6px 12px">Atlas → Forge · message queued · reply pending</div>
+
+    <div style="display:flex;gap:10px;align-items:flex-start">
+      <div aria-hidden="true" style="width:30px;height:30px;border-radius:50%;background:#E8B04B;flex-shrink:0"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;color:#A9AEB8;margin-bottom:3px">Forge <span style="color:#E8B04B;font-weight:600;margin-left:6px">needs you</span></div>
+        <div style="font-size:14px;line-height:1.5;background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:10px 12px"><span style="color:#E8B04B">@you</span> which changelog style do you want: short bullets or grouped paragraphs?</div>
+      </div>
+    </div>
+
+    <div style="align-self:center;font-size:12px;color:#A9AEB8;font-style:italic">Scout passed this round</div>
+  </div>
+
+  <div role="listbox" aria-label="Mention suggestions" style="margin:0 16px 8px;background:#1C2029;border:1px solid #2A2F3A;border-radius:14px;padding:6px;display:flex;flex-direction:column">
+    <div role="option" aria-selected="true" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;background:#2A2F3A"><span aria-hidden="true" style="width:26px;height:26px;border-radius:7px;background:#4FC3B5"></span><span style="font-size:14px;font-weight:600">Atlas</span><span style="font-size:12px;color:#A9AEB8">Coding agent</span></div>
+    <div role="option" aria-selected="false" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px"><span aria-hidden="true" style="width:26px;height:26px;border-radius:50%;background:#E8B04B"></span><span style="font-size:14px;font-weight:600">Forge</span><span style="font-size:12px;color:#A9AEB8">Build and release</span></div>
+    <div role="option" aria-selected="false" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px"><span style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#E8B04B;font-weight:700" aria-hidden="true">@</span><span style="font-size:14px;font-weight:600">you</span><span style="font-size:12px;color:#A9AEB8">Ask me a question</span></div>
+  </div>
+
+  <div style="padding:0 16px 10px;display:flex;flex-direction:column;gap:8px">
+    <div style="font-size:12px;color:#A9AEB8;line-height:1.4">Type "stop" or "pause" next to an @mention to hold that member. Rooms can turn this off.</div>
+    <div style="display:flex;align-items:center;gap:8px;background:#14171C;border:1px solid #2A2F3A;border-radius:16px;padding:8px">
+      <div style="flex:1;min-height:44px;display:flex;align-items:center;font-size:15px;color:#ECEAE4">@<span style="color:#7A8090;margin-left:2px">Atlas, Forge or Scout…</span></div>
+      <button type="button" aria-label="Send" style="width:44px;height:44px;border-radius:12px;background:#E8B04B;border:0;color:#1A1408;font-size:18px;font-weight:700">↑</button>
+    </div>
+  </div>
+
+  <nav aria-label="Main" style="display:flex;justify-content:space-around;align-items:center;height:84px;box-sizing:border-box;padding:10px 6px 24px;background:#14171C;border-top:1px solid #2A2F3A;flex-shrink:0">
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Chat</button>
+    <button type="button" style="background:none;border:0;font:600 12px 'IBM Plex Sans',sans-serif;color:#E8B04B;padding:8px 10px;min-width:56px">Bots</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Inbox</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Tasks</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Control</button>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Clarify</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#0B0D10;color:#ECEAE4;font-family:'IBM Plex Sans',system-ui,sans-serif;position:relative;overflow:hidden">
+  <div aria-hidden="true" style="padding:22px 18px;opacity:.5;display:flex;flex-direction:column;gap:14px">
+    <div style="height:38px;width:60%;background:#1C2029;border-radius:10px"></div>
+    <div style="height:44px;width:70%;margin-left:auto;background:#1C2029;border-radius:16px"></div>
+    <div style="height:70px;width:86%;background:#14171C;border-radius:14px"></div>
+  </div>
+  <div style="position:absolute;inset:0;background:rgba(0,0,0,.6)"></div>
+
+  <div role="dialog" aria-label="Agent question" style="position:absolute;left:0;right:0;bottom:0;background:#14171C;border-top:1px solid #2A2F3A;border-radius:22px 22px 0 0;padding:14px 20px 28px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px">
+    <div aria-hidden="true" style="width:40px;height:4px;border-radius:2px;background:#3A4150;margin:0 auto"></div>
+    <div>
+      <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#E8B04B">HERMES NEEDS A DECISION</div>
+      <div style="font-size:20px;font-weight:600;margin-top:4px;line-height:1.3">Which database should the migration target?</div>
+      <div style="font-size:13px;color:#A9AEB8;margin-top:6px">Asked in chat · web-app · 2 min ago</div>
+    </div>
+
+    <fieldset style="margin:0;padding:0;border:0;display:flex;flex-direction:column;gap:8px">
+      <legend style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Choose an answer</legend>
+      <label for="db1" style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:#1C2029;border:1px solid #E8B04B">
+        <input id="db1" type="radio" name="db" checked style="width:20px;height:20px;margin:1px 0 0;accent-color:#E8B04B">
+        <span><span style="font-size:15px;font-weight:600;display:block">PostgreSQL 16</span><span style="font-size:13px;color:#A9AEB8">Matches staging. Recommended.</span></span>
+      </label>
+      <label for="db2" style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:#0F1217;border:1px solid #2A2F3A">
+        <input id="db2" type="radio" name="db" style="width:20px;height:20px;margin:1px 0 0;accent-color:#E8B04B">
+        <span><span style="font-size:15px;font-weight:600;display:block">SQLite</span><span style="font-size:13px;color:#A9AEB8">Local file. No server to run.</span></span>
+      </label>
+      <label for="db3" style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:#0F1217;border:1px solid #2A2F3A">
+        <input id="db3" type="radio" name="db" style="width:20px;height:20px;margin:1px 0 0;accent-color:#E8B04B">
+        <span><span style="font-size:15px;font-weight:600;display:block">Keep MySQL</span><span style="font-size:13px;color:#A9AEB8">No migration. Current setup.</span></span>
+      </label>
+      <label for="db4" style="display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:14px;background:#0F1217;border:1px solid #2A2F3A">
+        <span style="display:flex;gap:12px;align-items:center"><input id="db4" type="radio" name="db" style="width:20px;height:20px;margin:0;accent-color:#E8B04B"><span style="font-size:15px;font-weight:600">Other</span></span>
+        <input type="text" aria-label="Other answer" placeholder="Type your answer" style="height:44px;box-sizing:border-box;border-radius:10px;border:1px solid #3A4150;background:#14171C;color:#ECEAE4;padding:0 12px;font:400 15px 'IBM Plex Sans',sans-serif">
+      </label>
+    </fieldset>
+
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:10px">
+      <button type="button" style="height:48px;border-radius:12px;background:#1C2029;color:#ECEAE4;border:1px solid #2A2F3A;font:500 15px 'IBM Plex Sans',sans-serif">Skip</button>
+      <button type="button" style="height:48px;border-radius:12px;background:#E8B04B;color:#1A1408;border:0;font:600 15px 'IBM Plex Sans',sans-serif">Send answer</button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

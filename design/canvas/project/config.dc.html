@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Config</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+label{font-size:13px;color:#A9AEB8}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#0B0D10;color:#ECEAE4;font-family:'IBM Plex Sans',system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden">
+  <div style="padding:22px 16px 10px">
+    <button type="button" style="height:40px;padding:0 6px;background:none;border:0;color:#E8B04B;font:500 15px 'IBM Plex Sans',sans-serif">‹ Control</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:4px">
+      <div style="font-size:24px;font-weight:600">Config</div>
+      <button type="button" style="height:40px;padding:0 12px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Profile: Default ▾</button>
+    </div>
+  </div>
+
+  <div style="flex:1;min-height:0;overflow:auto;padding:4px 20px 12px;display:flex;flex-direction:column;gap:12px">
+    <details open style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:4px 14px 14px">
+      <summary style="min-height:44px;display:flex;align-items:center;font-size:15px;font-weight:600;cursor:pointer">Model</summary>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <label for="c-prov">Provider</label>
+        <select id="c-prov" style="height:44px;box-sizing:border-box;border-radius:10px;border:1px solid #3A4150;background:#0F1217;color:#ECEAE4;padding:0 12px;font:400 15px 'IBM Plex Sans',sans-serif"><option>Nous Portal</option><option>OpenRouter</option><option>OpenAI</option><option>Custom endpoint</option></select>
+        <label for="c-eff">Reasoning effort</label>
+        <select id="c-eff" style="height:44px;box-sizing:border-box;border-radius:10px;border:1px solid #3A4150;background:#0F1217;color:#ECEAE4;padding:0 12px;font:400 15px 'IBM Plex Sans',sans-serif"><option>Low</option><option selected>Medium</option><option>High</option></select>
+      </div>
+    </details>
+
+    <details open style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:4px 14px 14px">
+      <summary style="min-height:44px;display:flex;align-items:center;font-size:15px;font-weight:600;cursor:pointer">Terminal</summary>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <label for="c-back">Backend</label>
+        <select id="c-back" style="height:44px;box-sizing:border-box;border-radius:10px;border:1px solid #3A4150;background:#0F1217;color:#ECEAE4;padding:0 12px;font:400 15px 'IBM Plex Sans',sans-serif"><option>Local</option><option>Docker</option><option>SSH</option><option>Daytona</option><option>Modal</option><option>Singularity</option><option>Vercel Sandbox</option></select>
+        <div style="font-size:12px;color:#A9AEB8;line-height:1.5">Local runs commands with no isolation. Container backends set their own limits.</div>
+      </div>
+    </details>
+
+    <details style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:4px 14px 14px">
+      <summary style="min-height:44px;display:flex;align-items:center;font-size:15px;font-weight:600;cursor:pointer">Display</summary>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <label for="c-theme">Theme</label>
+        <select id="c-theme" style="height:44px;box-sizing:border-box;border-radius:10px;border:1px solid #3A4150;background:#0F1217;color:#ECEAE4;padding:0 12px;font:400 15px 'IBM Plex Sans',sans-serif"><option>Dark</option><option>Light</option></select>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px"><span>Show tokens per second</span><span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#2A2F3A;position:relative"><span style="position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#A9AEB8"></span></span></div>
+      </div>
+    </details>
+
+    <details style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:4px 14px 14px">
+      <summary style="min-height:44px;display:flex;align-items:center;font-size:15px;font-weight:600;cursor:pointer">Agent</summary>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <label for="c-turns">Max turns per session</label>
+        <input id="c-turns" type="number" value="90" min="1" style="height:44px;box-sizing:border-box;border-radius:10px;border:1px solid #3A4150;background:#0F1217;color:#ECEAE4;padding:0 12px;font:400 15px 'IBM Plex Mono',monospace">
+        <div style="font-size:13px;color:#A9AEB8">Persona file: SOUL.md</div>
+      </div>
+    </details>
+
+    <details style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:4px 14px 14px">
+      <summary style="min-height:44px;display:flex;align-items:center;font-size:15px;font-weight:600;cursor:pointer">Memory</summary>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <label for="c-mem">Memory provider</label>
+        <select id="c-mem" style="height:44px;box-sizing:border-box;border-radius:10px;border:1px solid #3A4150;background:#0F1217;color:#ECEAE4;padding:0 12px;font:400 15px 'IBM Plex Sans',sans-serif"><option>Built-in</option><option>Honcho</option></select>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px"><span>Build a user model across sessions</span><span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#E8B04B;position:relative"><span style="position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#1A1408"></span></span></div>
+      </div>
+    </details>
+
+    <details style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:4px 14px 14px">
+      <summary style="min-height:44px;display:flex;align-items:center;font-size:15px;font-weight:600;cursor:pointer">Approvals</summary>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <label for="c-appr">Approval mode</label>
+        <select id="c-appr" style="height:44px;box-sizing:border-box;border-radius:10px;border:1px solid #3A4150;background:#0F1217;color:#ECEAE4;padding:0 12px;font:400 15px 'IBM Plex Sans',sans-serif"><option>Smart</option><option>Manual</option><option>Off</option></select>
+        <div style="font-size:12px;color:#A9AEB8;line-height:1.5">Full approval rules are under Security &amp; keys.</div>
+      </div>
+    </details>
+  </div>
+
+  <div style="padding:12px 20px 24px;border-top:1px solid #2A2F3A;background:#14171C;display:flex;flex-direction:column;gap:8px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button type="button" style="height:44px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Export JSON</button>
+      <button type="button" style="height:44px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Import JSON</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:8px">
+      <button type="button" style="height:48px;border-radius:12px;background:transparent;border:1px solid #3A4150;color:#A9AEB8;font:500 14px 'IBM Plex Sans',sans-serif">Reset to defaults</button>
+      <button type="button" style="height:48px;border-radius:12px;background:#E8B04B;border:0;color:#1A1408;font:600 15px 'IBM Plex Sans',sans-serif">Save changes</button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cron editor</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+label{font-size:13px;color:#A9AEB8}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#0B0D10;color:#ECEAE4;font-family:'IBM Plex Sans',system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden">
+  <div style="padding:22px 16px 10px;display:flex;justify-content:space-between;align-items:center">
+    <button type="button" style="height:44px;padding:0 6px;background:none;border:0;color:#E8B04B;font:500 15px 'IBM Plex Sans',sans-serif">‹ Cron jobs</button>
+    <div style="font-size:17px;font-weight:600">Edit job</div>
+    <button type="button" style="height:44px;padding:0 14px;border-radius:12px;background:#E8B04B;color:#1A1408;border:0;font:600 14px 'IBM Plex Sans',sans-serif">Save</button>
+  </div>
+
+  <div style="flex:1;min-height:0;overflow:auto;padding:4px 20px 24px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label for="cj-name">Name</label>
+      <input id="cj-name" type="text" value="Daily briefing" style="height:46px;box-sizing:border-box;border-radius:12px;border:1px solid #3A4150;background:#0F1217;color:#ECEAE4;padding:0 14px;font:400 15px 'IBM Plex Sans',sans-serif">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label for="cj-bot">Run as bot</label>
+      <select id="cj-bot" style="height:46px;box-sizing:border-box;border-radius:12px;border:1px solid #3A4150;background:#0F1217;color:#ECEAE4;padding:0 12px;font:400 15px 'IBM Plex Sans',sans-serif"><option>Default bot</option><option>Atlas</option><option>Scout</option></select>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label for="cj-prompt">Prompt</label>
+      <textarea id="cj-prompt" rows="3" style="box-sizing:border-box;border-radius:12px;border:1px solid #3A4150;background:#0F1217;color:#ECEAE4;padding:10px 14px;font:400 15px 'IBM Plex Sans',sans-serif;resize:none">Summarize overnight merged PRs and failed runs. Keep it under 150 words.</textarea>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8">SCHEDULE</div>
+      <div role="tablist" aria-label="Schedule mode" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#0F1217;border:1px solid #2A2F3A;border-radius:12px;padding:4px">
+        <button type="button" role="tab" aria-selected="true" style="height:40px;border-radius:9px;background:#E8B04B;border:0;color:#1A1408;font:600 14px 'IBM Plex Sans',sans-serif">Simple</button>
+        <button type="button" role="tab" aria-selected="false" style="height:40px;border-radius:9px;background:transparent;border:0;color:#A9AEB8;font:500 14px 'IBM Plex Sans',sans-serif">Cron expression</button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <span style="font-size:13px;color:#1A1408;background:#E8B04B;border-radius:999px;padding:8px 12px;font-weight:600">Weekdays</span>
+        <span style="font-size:13px;color:#A9AEB8;border:1px solid #2A2F3A;border-radius:999px;padding:8px 12px">Daily</span>
+        <span style="font-size:13px;color:#A9AEB8;border:1px solid #2A2F3A;border-radius:999px;padding:8px 12px">Weekly</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label for="cj-time">At</label>
+        <input id="cj-time" type="time" value="08:00" style="height:46px;box-sizing:border-box;border-radius:12px;border:1px solid #3A4150;background:#0F1217;color:#ECEAE4;padding:0 14px;font:400 15px 'IBM Plex Mono',monospace">
+      </div>
+      <div style="background:#0F1217;border:1px solid #2A2F3A;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;font-size:13px">
+        <div style="color:#A9AEB8">Cron <span style="font-family:'IBM Plex Mono',monospace;color:#D7D3C8">0 8 * * 1-5</span></div>
+        <div style="color:#A9AEB8">Next runs <span style="color:#ECEAE4">Fri 9 Oct 08:00 · Mon 12 Oct 08:00</span></div>
+      </div>
+    </div>
+
+    <fieldset style="margin:0;padding:0;border:0;display:flex;flex-direction:column;gap:8px">
+      <legend style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8;margin-bottom:6px">JOB TYPE</legend>
+      <label for="jt1" style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:12px;background:#1C2029;border:1px solid #E8B04B;color:#ECEAE4">
+        <input id="jt1" type="radio" name="jt" checked style="width:20px;height:20px;margin:1px 0 0;accent-color:#E8B04B"><span><span style="font-size:15px;font-weight:600;display:block">Agent job</span><span style="font-size:13px;color:#A9AEB8">Uses a model and tools.</span></span></label>
+      <label for="jt2" style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:12px;background:#0F1217;border:1px solid #2A2F3A;color:#ECEAE4">
+        <input id="jt2" type="radio" name="jt" style="width:20px;height:20px;margin:1px 0 0;accent-color:#E8B04B"><span><span style="font-size:15px;font-weight:600;display:block">Script only</span><span style="font-size:13px;color:#A9AEB8">Runs a command. No model call.</span></span></label>
+    </fieldset>
+
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label for="cj-deliver">Deliver results to</label>
+      <select id="cj-deliver" style="height:46px;box-sizing:border-box;border-radius:12px;border:1px solid #3A4150;background:#0F1217;color:#ECEAE4;padding:0 12px;font:400 15px 'IBM Plex Sans',sans-serif"><option>Telegram · Ops chat</option><option>Discord · #releases</option><option>Bot chat only</option><option>Nowhere (log only)</option></select>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px">
+      <span>Only deliver on failure</span>
+      <span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#2A2F3A;position:relative"><span style="position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#A9AEB8"></span></span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px">
+      <span>Enabled</span>
+      <span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#E8B04B;position:relative"><span style="position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#1A1408"></span></span>
+    </div>
+
+    <button type="button" style="height:46px;border-radius:12px;background:transparent;color:#F0736B;border:1px solid #F0736B;font:500 15px 'IBM Plex Sans',sans-serif">Delete job</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

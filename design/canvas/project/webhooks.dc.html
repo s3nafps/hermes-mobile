@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Webhooks</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+label{font-size:13px;color:#A9AEB8}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#0B0D10;color:#ECEAE4;font-family:'IBM Plex Sans',system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden">
+  <div style="padding:22px 16px 10px">
+    <button type="button" style="height:40px;padding:0 6px;background:none;border:0;color:#E8B04B;font:500 15px 'IBM Plex Sans',sans-serif">‹ Control</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;gap:10px">
+      <div style="font-size:24px;font-weight:600">Webhooks</div>
+      <button type="button" style="height:44px;padding:0 14px;border-radius:12px;background:#E8B04B;color:#1A1408;border:0;font:600 14px 'IBM Plex Sans',sans-serif">+ New</button>
+    </div>
+    <div style="font-size:13px;color:#A9AEB8;margin-top:6px">Webhook platform is on. External services post events here.</div>
+  </div>
+
+  <div style="flex:1;min-height:0;overflow:auto;padding:4px 20px 20px;display:flex;flex-direction:column;gap:10px">
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-size:15px;font-weight:600">GitHub PR review</div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#A9AEB8">/hooks/github-pr</div></div><span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#E8B04B;position:relative"><span style="position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#1A1408"></span></span></div>
+      <div style="font-size:12px;color:#A9AEB8">Delivers to Atlas · last delivery 2 min ago</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#A9AEB8"><span>Secret ••••••••</span><span style="display:flex;gap:6px"><button type="button" style="height:40px;padding:0 10px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Copy URL</button><button type="button" style="height:40px;padding:0 10px;border-radius:10px;background:transparent;border:1px solid #F0736B;color:#F0736B;font:500 13px 'IBM Plex Sans',sans-serif">Delete</button></span></div>
+    </div>
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-size:15px;font-weight:600">Monitoring alerts</div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#A9AEB8">/hooks/alerts</div></div><span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#E8B04B;position:relative"><span style="position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#1A1408"></span></span></div>
+      <div style="font-size:12px;color:#A9AEB8">Delivers to Release crew · last delivery yesterday</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#A9AEB8"><span>Secret ••••••••</span><span style="display:flex;gap:6px"><button type="button" style="height:40px;padding:0 10px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Copy URL</button><button type="button" style="height:40px;padding:0 10px;border-radius:10px;background:transparent;border:1px solid #F0736B;color:#F0736B;font:500 13px 'IBM Plex Sans',sans-serif">Delete</button></span></div>
+    </div>
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-size:15px;font-weight:600">Deploy notify</div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#A9AEB8">/hooks/deploy</div></div><span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#2A2F3A;position:relative"><span style="position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#A9AEB8"></span></span></div>
+      <div style="font-size:12px;color:#A9AEB8">Disabled · never delivered</div>
+    </div>
+
+    <div style="background:#14171C;border:1px solid #E8B04B;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:15px;font-weight:600">New webhook</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label for="wh-name">Name</label>
+        <input id="wh-name" type="text" placeholder="e.g. Sentry errors" style="height:44px;box-sizing:border-box;border-radius:12px;border:1px solid #3A4150;background:#0F1217;color:#ECEAE4;padding:0 12px;font:400 15px 'IBM Plex Sans',sans-serif">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label for="wh-route">Route</label>
+        <input id="wh-route" type="text" placeholder="/hooks/your-route" style="height:44px;box-sizing:border-box;border-radius:12px;border:1px solid #3A4150;background:#0F1217;color:#ECEAE4;padding:0 12px;font:400 14px 'IBM Plex Mono',monospace">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label for="wh-to">Deliver to</label>
+        <select id="wh-to" style="height:44px;box-sizing:border-box;border-radius:12px;border:1px solid #3A4150;background:#0F1217;color:#ECEAE4;padding:0 12px;font:400 15px 'IBM Plex Sans',sans-serif"><option>Atlas</option><option>Release crew</option><option>Telegram · Ops chat</option></select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label for="wh-prompt">Prompt template</label>
+        <textarea id="wh-prompt" rows="2" style="box-sizing:border-box;border-radius:12px;border:1px solid #3A4150;background:#0F1217;color:#ECEAE4;padding:10px 12px;font:400 14px 'IBM Plex Mono',monospace;resize:none">Review {{title}} and list risks.</textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:8px">
+        <button type="button" style="height:46px;border-radius:12px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 14px 'IBM Plex Sans',sans-serif">Cancel</button>
+        <button type="button" style="height:46px;border-radius:12px;background:#E8B04B;border:0;color:#1A1408;font:600 14px 'IBM Plex Sans',sans-serif">Create webhook</button>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

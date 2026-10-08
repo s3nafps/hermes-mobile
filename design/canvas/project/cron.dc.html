@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cron jobs</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#0B0D10;color:#ECEAE4;font-family:'IBM Plex Sans',system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden">
+  <div style="padding:22px 20px 10px;display:flex;align-items:center;justify-content:space-between">
+    <div style="font-size:24px;font-weight:600">Tasks</div>
+    <button type="button" style="height:44px;padding:0 16px;border-radius:12px;background:#E8B04B;color:#1A1408;border:0;font:600 14px 'IBM Plex Sans',sans-serif">New job</button>
+  </div>
+
+  <div style="padding:0 20px 12px">
+    <div role="tablist" aria-label="Tasks section" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;background:#0F1217;border:1px solid #2A2F3A;border-radius:12px;padding:4px">
+      <button type="button" role="tab" aria-selected="true" style="height:40px;border-radius:9px;background:#E8B04B;border:0;color:#1A1408;font:600 14px 'IBM Plex Sans',sans-serif">Cron</button>
+      <button type="button" role="tab" aria-selected="false" style="height:40px;border-radius:9px;background:transparent;border:0;color:#A9AEB8;font:500 14px 'IBM Plex Sans',sans-serif">Board</button>
+      <button type="button" role="tab" aria-selected="false" style="height:40px;border-radius:9px;background:transparent;border:0;color:#A9AEB8;font:500 14px 'IBM Plex Sans',sans-serif">Goals</button>
+    </div>
+  </div>
+
+  <div style="flex:1;min-height:0;overflow:hidden;padding:0 20px;display:flex;flex-direction:column;gap:10px">
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div><div style="font-size:16px;font-weight:600">Daily briefing</div><div style="font-size:13px;color:#A9AEB8">Every weekday 08:00</div></div>
+        <span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#E8B04B;position:relative"><span style="position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#1A1408"></span></span>
+      </div>
+      <div style="font-size:13px;color:#A9AEB8">Delivers to Telegram · Ops chat</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px"><span style="color:#7BD389">Last run OK · 08:00 today</span><button type="button" style="height:40px;padding:0 12px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Run now</button></div>
+    </div>
+
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div><div style="font-size:16px;font-weight:600">Nightly backup <span style="font-size:11px;font-weight:600;color:#A9AEB8;border:1px solid #2A2F3A;border-radius:6px;padding:2px 6px;margin-left:4px;vertical-align:2px">SCRIPT</span></div><div style="font-size:13px;color:#A9AEB8">Every day 02:30 · no model call</div></div>
+        <span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#E8B04B;position:relative"><span style="position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#1A1408"></span></span>
+      </div>
+      <div style="font-size:13px;color:#A9AEB8">Delivers to Ops chat on failure only</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px"><span style="color:#F7A39D">Last run failed · disk full</span><button type="button" style="height:40px;padding:0 12px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Run now</button></div>
+    </div>
+
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div><div style="font-size:16px;font-weight:600">Weekly audit</div><div style="font-size:13px;color:#A9AEB8">Mondays 09:00 · paused</div></div>
+        <span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#2A2F3A;position:relative"><span style="position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#A9AEB8"></span></span>
+      </div>
+      <div style="font-size:13px;color:#A9AEB8">No delivery target. Logs only.</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px"><span style="color:#A9AEB8">Next run: none while paused</span><button type="button" style="height:40px;padding:0 12px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Run now</button></div>
+    </div>
+
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div><div style="font-size:16px;font-weight:600">Release check <span style="font-size:11px;font-weight:600;color:#4FC3B5;border:1px solid #4FC3B5;border-radius:6px;padding:2px 6px;margin-left:4px;vertical-align:2px">ROUTINE · ATLAS</span></div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#A9AEB8">*/30 * * * *</div></div>
+        <span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#E8B04B;position:relative"><span style="position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#1A1408"></span></span>
+      </div>
+      <div style="font-size:13px;color:#A9AEB8">Output goes to the Atlas chat</div>
+      <div style="font-size:12px;color:#A9AEB8">Next run in 12 min</div>
+    </div>
+
+    <div style="font-size:12px;color:#A9AEB8;line-height:1.5;padding:2px 2px 0">Routines from Bots show here too, tagged with their Bot. Each job's output also lands in its delivery target.</div>
+  </div>
+
+  <nav aria-label="Main" style="display:flex;justify-content:space-around;align-items:center;height:84px;box-sizing:border-box;padding:10px 6px 24px;background:#14171C;border-top:1px solid #2A2F3A;flex-shrink:0;margin-top:10px">
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Chat</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Bots</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Inbox</button>
+    <button type="button" style="background:none;border:0;font:600 12px 'IBM Plex Sans',sans-serif;color:#E8B04B;padding:8px 10px;min-width:56px">Tasks</button>
+    <button type="button" style="background:none;border:0;font:500 12px 'IBM Plex Sans',sans-serif;color:#A9AEB8;padding:8px 10px;min-width:56px">Control</button>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

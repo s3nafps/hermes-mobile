@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Skills and toolsets</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#0B0D10;color:#ECEAE4;font-family:'IBM Plex Sans',system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden">
+  <div style="padding:22px 16px 10px">
+    <button type="button" style="height:40px;padding:0 6px;background:none;border:0;color:#E8B04B;font:500 15px 'IBM Plex Sans',sans-serif">‹ Control</button>
+    <div style="font-size:24px;font-weight:600;margin-top:4px">Skills</div>
+  </div>
+
+  <div style="padding:0 20px 10px;display:flex;flex-direction:column;gap:10px">
+    <div role="tablist" aria-label="Skills section" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;background:#0F1217;border:1px solid #2A2F3A;border-radius:12px;padding:4px">
+      <button type="button" role="tab" aria-selected="true" style="height:40px;border-radius:9px;background:#E8B04B;border:0;color:#1A1408;font:600 14px 'IBM Plex Sans',sans-serif">Installed</button>
+      <button type="button" role="tab" aria-selected="false" style="height:40px;border-radius:9px;background:transparent;border:0;color:#A9AEB8;font:500 14px 'IBM Plex Sans',sans-serif">Toolsets</button>
+      <button type="button" role="tab" aria-selected="false" style="height:40px;border-radius:9px;background:transparent;border:0;color:#A9AEB8;font:500 14px 'IBM Plex Sans',sans-serif">Hub</button>
+    </div>
+    <label for="sq" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Search skills</label>
+    <input id="sq" type="search" placeholder="Search skills" style="height:44px;box-sizing:border-box;border-radius:12px;border:1px solid #2A2F3A;background:#14171C;color:#ECEAE4;padding:0 14px;font:400 14px 'IBM Plex Sans',sans-serif">
+  </div>
+
+  <div style="flex:1;min-height:0;overflow:auto;padding:0 20px 20px;display:flex;flex-direction:column;gap:10px">
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;color:#A9AEB8;line-height:1.5">
+      <span>Curator last ran 2 days ago and merged 1 duplicate skill.</span>
+      <button type="button" style="height:40px;padding:0 12px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif;flex-shrink:0">Run</button>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8">SKILLS</div>
+    <div style="background:#14171C;border:1px solid #E8B04B;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span style="font-family:'IBM Plex Mono',monospace;font-size:14px">github-pr-review</span><span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#E8B04B;position:relative"><span style="position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#1A1408"></span></span></div>
+      <span style="align-self:flex-start;font-size:11px;font-weight:600;color:#E8B04B;border:1px solid #E8B04B;border-radius:6px;padding:2px 7px">WRITTEN BY AGENT · IMPROVED 2×</span>
+      <div style="font-size:13px;color:#A9AEB8">Reviews PRs and posts comments.</div>
+    </div>
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span style="font-family:'IBM Plex Mono',monospace;font-size:14px">pdf-extract</span><span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#E8B04B;position:relative"><span style="position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#1A1408"></span></span></div>
+      <div style="font-size:13px;color:#A9AEB8">Reads text and tables from PDFs.</div>
+    </div>
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span style="font-family:'IBM Plex Mono',monospace;font-size:14px">daily-report</span><span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#2A2F3A;position:relative"><span style="position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#A9AEB8"></span></span></div>
+      <div style="font-size:13px;color:#A9AEB8">Builds a report from logs and PRs. Off for Default bot.</div>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8;margin-top:6px">TOOLSETS</div>
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;display:flex;flex-direction:column;font-size:15px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>Web search &amp; extract</span><span aria-hidden="true" style="width:44px;height:26px;border-radius:999px;background:#E8B04B;position:relative"><span style="position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#1A1408"></span></span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>Browser</span><span aria-hidden="true" style="width:44px;height:26px;border-radius:999px;background:#E8B04B;position:relative"><span style="position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#1A1408"></span></span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>Code execution</span><span aria-hidden="true" style="width:44px;height:26px;border-radius:999px;background:#E8B04B;position:relative"><span style="position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#1A1408"></span></span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #2A2F3A"><span>Image generation</span><span aria-hidden="true" style="width:44px;height:26px;border-radius:999px;background:#2A2F3A;position:relative"><span style="position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#A9AEB8"></span></span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px"><span>Text-to-speech</span><span aria-hidden="true" style="width:44px;height:26px;border-radius:999px;background:#E8B04B;position:relative"><span style="position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#1A1408"></span></span></div>
+    </div>
+
+    <div style="background:#14171C;border:1px solid #2A2F3A;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:15px;font-weight:600">Skill hub</div>
+      <div style="font-size:13px;color:#A9AEB8;line-height:1.5">2 installed skills have updates.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button type="button" style="height:44px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 14px 'IBM Plex Sans',sans-serif">Browse</button>
+        <button type="button" style="height:44px;border-radius:10px;background:#E8B04B;border:0;color:#1A1408;font:600 14px 'IBM Plex Sans',sans-serif">Update all</button>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

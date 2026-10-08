@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Model and reasoning</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#0B0D10;color:#ECEAE4;font-family:'IBM Plex Sans',system-ui,sans-serif;position:relative;overflow:hidden">
+  <div aria-hidden="true" style="padding:22px 18px;opacity:.4;display:flex;flex-direction:column;gap:14px">
+    <div style="height:38px;width:60%;background:#1C2029;border-radius:10px"></div>
+    <div style="height:70px;width:86%;background:#14171C;border-radius:14px"></div>
+  </div>
+  <div style="position:absolute;inset:0;background:rgba(0,0,0,.6)"></div>
+
+  <div role="dialog" aria-label="Model and reasoning" style="position:absolute;left:0;right:0;bottom:0;max-height:760px;background:#14171C;border-top:1px solid #2A2F3A;border-radius:22px 22px 0 0;padding:14px 20px 24px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px">
+    <div aria-hidden="true" style="width:40px;height:4px;border-radius:2px;background:#3A4150;margin:0 auto"></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div style="font-size:20px;font-weight:600">Model &amp; reasoning</div>
+        <div style="font-size:13px;color:#A9AEB8;margin-top:2px">Applies to this session</div>
+      </div>
+      <button type="button" style="height:40px;padding:0 12px;border-radius:10px;background:#1C2029;border:1px solid #2A2F3A;color:#ECEAE4;font:500 13px 'IBM Plex Sans',sans-serif">Done</button>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8">PROVIDER</div>
+    <div role="radiogroup" aria-label="Provider" style="display:flex;flex-direction:column;gap:6px">
+      <label for="p1" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:#1C2029;border:1px solid #E8B04B;font-size:15px">
+        <input id="p1" type="radio" name="prov" checked style="width:20px;height:20px;accent-color:#E8B04B;margin:0"><span style="flex:1">Nous Portal</span><span style="font-size:12px;color:#A9AEB8">default</span></label>
+      <label for="p2" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:#0F1217;border:1px solid #2A2F3A;font-size:15px">
+        <input id="p2" type="radio" name="prov" style="width:20px;height:20px;accent-color:#E8B04B;margin:0"><span style="flex:1">OpenRouter</span></label>
+      <label for="p3" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:#0F1217;border:1px solid #2A2F3A;font-size:15px">
+        <input id="p3" type="radio" name="prov" style="width:20px;height:20px;accent-color:#E8B04B;margin:0"><span style="flex:1">OpenAI</span></label>
+      <label for="p4" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:#0F1217;border:1px solid #2A2F3A;font-size:15px">
+        <input id="p4" type="radio" name="prov" style="width:20px;height:20px;accent-color:#E8B04B;margin:0"><span style="flex:1">Custom endpoint</span><span style="font-size:12px;color:#A9AEB8">base URL</span></label>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8">REASONING EFFORT</div>
+    <div role="group" aria-label="Reasoning effort" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:#0F1217;border:1px solid #2A2F3A;border-radius:12px;padding:4px">
+      <button type="button" aria-pressed="false" style="height:40px;border-radius:9px;background:transparent;border:0;color:#A9AEB8;font:500 14px 'IBM Plex Sans',sans-serif">Low</button>
+      <button type="button" aria-pressed="true" style="height:40px;border-radius:9px;background:#E8B04B;border:0;color:#1A1408;font:600 14px 'IBM Plex Sans',sans-serif">Medium</button>
+      <button type="button" aria-pressed="false" style="height:40px;border-radius:9px;background:transparent;border:0;color:#A9AEB8;font:500 14px 'IBM Plex Sans',sans-serif">High</button>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#A9AEB8">FALLBACK AND ROUTING</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px">
+      <span style="line-height:1.4">Fall back to OpenRouter if the provider fails</span>
+      <span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#E8B04B;position:relative"><span style="position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#1A1408"></span></span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px">
+      <span style="line-height:1.4">Prefer the fastest route</span>
+      <span aria-hidden="true" style="flex-shrink:0;width:44px;height:26px;border-radius:999px;background:#2A2F3A;position:relative"><span style="position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#A9AEB8"></span></span>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13px;color:#A9AEB8;border-top:1px solid #2A2F3A;padding-top:12px">
+      <span>Save as the profile default</span>
+      <span style="font-size:13px;color:#ECEAE4">Default profile</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

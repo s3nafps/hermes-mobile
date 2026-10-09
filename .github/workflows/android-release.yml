@@ -87,11 +87,38 @@ jobs:
       - name: Generate the Android project
         run: npx expo prebuild --platform android --no-install --clean
 
+      # The release keystore lives in the repository secrets, never in the repository.
+      # Without the secrets the build falls back to the debug key (see docs in app/README.md).
+      - name: Decode the release keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "No release keystore secret set; the release build will use the debug key."
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.keystore"
+          echo "RELEASE_KEYSTORE=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+
       - name: Build the release APK
         working-directory: app/android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ env.RELEASE_KEYSTORE }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           chmod +x ./gradlew
           ./gradlew assembleRelease --no-daemon
+
+      - name: Describe the signing
+        id: signing
+        run: |
+          if [ -n "${RELEASE_KEYSTORE:-}" ]; then
+            echo "note=signed with the release key, so each release installs over the one before it." >> "$GITHUB_OUTPUT"
+          else
+            echo "note=signed with the debug key, so each new build installs over the previous one. It is not a Play Store build." >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Name the APK and write its checksum
         env:
@@ -122,7 +149,7 @@ jobs:
 
             Install: download `hermes-mobile-${{ steps.version.outputs.version }}.apk` on the phone, open it, and allow installs from this source. Check the file against the `.sha256` file if you want to.
 
-            Signing: this build uses the project's standard debug key, so each new build installs over the previous one. It is not a Play Store build.
+            Signing: this build is ${{ steps.signing.outputs.note }}
 
             Connect to a gateway that is reachable from the phone (for example over Tailscale or your home network). A gateway on another machine needs password sign-in enabled.
           files: |

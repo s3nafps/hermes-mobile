@@ -37,7 +37,8 @@
         }
       ],
       "expo-secure-store",
-      "./plugins/with-cleartext.js"
+      "./plugins/with-cleartext.js",
+      "./plugins/with-release-signing.js"
     ],
     "experiments": {
       "typedRoutes": true

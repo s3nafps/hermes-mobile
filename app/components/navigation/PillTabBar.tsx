@@ -9,15 +9,13 @@ import { tokens } from '@/constants/tokens';
 export type PillTabBarProps = BottomTabBarProps & {
   // Height of the keyboard, or 0 while it is hidden.
   keyboardHeight: number;
-  // Space the floating button keeps above the keyboard.
+  // Gap between the keyboard and the floating button.
   lift: number;
-  // Edge the floating button sits on.
-  side: 'left' | 'right';
 };
 
 // Floating pill with the five tabs. It is laid out below the screens, so they never sit
 // under it. When the keyboard covers it, a floating button takes its place above the keyboard.
-export function PillTabBar({ keyboardHeight, lift, side, state, descriptors, navigation }: PillTabBarProps) {
+export function PillTabBar({ keyboardHeight, lift, state, descriptors, navigation }: PillTabBarProps) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -29,7 +27,6 @@ export function PillTabBar({ keyboardHeight, lift, side, state, descriptors, nav
         <FloatingTabs
           keyboardHeight={keyboardHeight}
           lift={lift}
-          side={side}
           state={state}
           descriptors={descriptors}
           navigation={navigation}

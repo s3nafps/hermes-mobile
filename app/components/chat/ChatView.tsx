@@ -6,6 +6,7 @@ import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, 
 import { AttachmentChip } from '@/components/chat/AttachmentChip';
 import { detachAttachment, pickDocument, pickPhoto, uploadAttachment, type PendingAttachment, type PickedFile } from '@/components/chat/attachments';
 import { ModelSheet } from '@/components/chat/ModelSheet';
+import { useKeyboardHeight } from '@/components/navigation/useKeyboardHeight';
 import { Badge, Button, EmptyState, InlineNotice, LoadingState, Sheet, StatusDot } from '@/components/ui';
 import { MONO, tokens } from '@/constants/tokens';
 import { useChat } from '@/lib/chat/ChatProvider';
@@ -14,6 +15,10 @@ import { useGateway } from '@/lib/gateway';
 import { messageOf } from '@/lib/gateway/hooks';
 
 const ATTACH_ICON = { ios: 'paperclip', android: 'attach_file', web: 'attach_file' } as const;
+
+// Right-hand space the composer leaves while the floating tab button sits above the keyboard:
+// the button's inset (16), its width (52) and a gap (8). The button then never covers Send.
+const FLOATING_BUTTON_GUTTER = 76;
 
 // A full conversation with one live session: history, the streaming reply,
 // tool activity, and the composer. The session itself lives in ChatProvider.
@@ -30,6 +35,7 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
   const [attachOpen, setAttachOpen] = useState(false);
   const [pending, setPending] = useState<PendingAttachment[]>([]);
   const listRef = useRef<FlatList<ChatItem>>(null);
+  const keyboardHeight = useKeyboardHeight();
 
   // Uploads that finish after their chip was removed, or after this chat was left, are
   // detached when they arrive, so no photo stays queued on the session by accident.
@@ -223,6 +229,7 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
         style={{
           gap: 8,
           padding: 10,
+          paddingRight: keyboardHeight > 0 ? FLOATING_BUTTON_GUTTER : 10,
           paddingBottom: Platform.OS === 'ios' ? 22 : 10,
           borderTopWidth: 1,
           borderTopColor: tokens.line,

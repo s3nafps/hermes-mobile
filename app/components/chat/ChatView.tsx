@@ -11,7 +11,9 @@ import { Badge, EmptyState, InlineNotice, LoadingState, StatusDot } from '@/comp
 
 // A full conversation with one live session: history, the streaming reply,
 // tool activity, and the composer. The session itself lives in ChatProvider.
-export function ChatView({ liveId }: { liveId: string }) {
+// keyboardOffset is the height above the composer that the keyboard avoidance must
+// clear. The stack route sits under a native header (88); a tab has none (0).
+export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyboardOffset?: number }) {
   const chat = useChat();
   const session = chat.state.sessions[liveId];
   const [draft, setDraft] = useState('');
@@ -61,7 +63,7 @@ export function ChatView({ liveId }: { liveId: string }) {
   const storedKey = session.storedKey;
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={88}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={keyboardOffset}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: tokens.line }}>
         <Pressable
           onPress={() => setModelOpen(true)}

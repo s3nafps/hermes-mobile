@@ -33,7 +33,9 @@ export function PillTabBar({ state, descriptors, navigation }: BottomTabBarProps
               }}
               style={[styles.item, focused && styles.itemActive]}>
               {options.tabBarIcon?.({ focused, color, size: 22 })}
-              <Text style={[styles.label, { color }]}>{label}</Text>
+              <Text numberOfLines={1} maxFontSizeMultiplier={1.2} style={[styles.label, { color }]}>
+                {label}
+              </Text>
             </Pressable>
           );
         })}

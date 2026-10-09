@@ -11,8 +11,16 @@ import { messageOf } from '@/lib/gateway/hooks';
 const LINES_TO_SHOW = 400;
 const POLL_WHILE_RUNNING_MS = 2000;
 
-// Runs the host's security audit and shows its report. The server keeps the last audit
-// log, so the most recent report is still here after the app or the server restarts.
+// The audit log is never truncated, so one tail can hold several runs. Each run opens
+// with a header line, and only the lines after the newest header belong to the latest run.
+const RUN_HEADER = /^=+ security-audit started (.+?) =+$/;
+
+// The audit prints each finding's severity in capitals. GitHub advisories use MODERATE
+// for what the audit calls medium.
+const SEVERITY = /\b(CRITICAL|HIGH|MODERATE|MEDIUM)\b/;
+
+// Runs the host's security audit and shows the latest report. The server keeps the audit
+// log between runs, so the most recent report is still here after a reload or restart.
 export function SecurityReport() {
   const { http } = useGateway();
   const [watching, setWatching] = useState(false);
@@ -51,18 +59,20 @@ export function SecurityReport() {
   };
 
   const report = audit.data;
-  const lines = report?.lines ?? [];
   const running = report?.running === true;
-  const counts = countSeverities(lines);
+  const latest = latestRun(report?.lines ?? []);
+  const counts = countSeverities(latest.entries);
 
   return (
     <Card style={{ gap: 14 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <View style={{ flex: 1, gap: 2 }}>
           <Text style={styles.heading}>Security report</Text>
-          <Text style={styles.muted}>Runs the hermes security audit on the host.</Text>
+          <Text style={styles.muted}>
+            {latest.startedAt ? `Last run started ${latest.startedAt}` : 'Runs the hermes security audit on the host.'}
+          </Text>
         </View>
-        <StatusBadge report={report} />
+        <StatusBadge report={report} counts={counts} />
       </View>
 
       {counts.critical + counts.high + counts.medium > 0 ? (
@@ -83,9 +93,9 @@ export function SecurityReport() {
       {actionError ? <InlineNotice tone="danger">{actionError}</InlineNotice> : null}
       {audit.error && !report ? <InlineNotice tone="danger">{audit.error}</InlineNotice> : null}
 
-      {lines.length > 0 ? (
+      {latest.entries.length > 0 ? (
         <ScrollView style={styles.report} contentContainerStyle={{ padding: 12, gap: 2 }} nestedScrollEnabled>
-          {lines.map((line, index) => (
+          {latest.entries.map((line, index) => (
             <Text key={index} selectable style={[styles.line, { color: toneOf(line) }]}>
               {line || ' '}
             </Text>
@@ -100,37 +110,49 @@ export function SecurityReport() {
   );
 }
 
-// The audit writes one entry per finding, starting with its severity in capitals,
-// for example "CRITICAL  PyJWT==2.13.0  GHSA-…". Matching capitals avoids
-// counting ordinary words in the descriptions.
-const SEVERITY = /\b(CRITICAL|HIGH|MEDIUM)\b/;
+// Returns the lines of the newest run. Without a header in the tail, every line is shown.
+function latestRun(lines: string[]): { startedAt: string | null; entries: string[] } {
+  let start = -1;
+  let startedAt: string | null = null;
+  for (let i = 0; i < lines.length; i++) {
+    const match = RUN_HEADER.exec(lines[i].trim());
+    if (match) {
+      start = i;
+      startedAt = match[1];
+    }
+  }
+  return { startedAt, entries: start >= 0 ? lines.slice(start + 1) : lines };
+}
 
 type SeverityCounts = { critical: number; high: number; medium: number };
 
 function countSeverities(lines: string[]): SeverityCounts {
   const counts: SeverityCounts = { critical: 0, high: 0, medium: 0 };
   for (const line of lines) {
-    const match = SEVERITY.exec(line);
-    if (!match) continue;
-    if (match[1] === 'CRITICAL') counts.critical += 1;
-    else if (match[1] === 'HIGH') counts.high += 1;
-    else counts.medium += 1;
+    const severity = SEVERITY.exec(line)?.[1];
+    if (severity === 'CRITICAL') counts.critical += 1;
+    else if (severity === 'HIGH') counts.high += 1;
+    else if (severity === 'MEDIUM' || severity === 'MODERATE') counts.medium += 1;
   }
   return counts;
 }
 
 function toneOf(line: string): string {
-  const match = SEVERITY.exec(line);
-  if (match?.[1] === 'CRITICAL' || match?.[1] === 'HIGH') return tokens.danger;
-  if (match?.[1] === 'MEDIUM') return tokens.accent;
+  const severity = SEVERITY.exec(line)?.[1];
+  if (severity === 'CRITICAL' || severity === 'HIGH') return tokens.danger;
+  if (severity === 'MEDIUM' || severity === 'MODERATE') return tokens.accent;
   return tokens.text;
 }
 
-// Exit 0 means the audit ran with nothing to report. Exit 1 means it reported findings.
-function StatusBadge({ report }: { report: AuditStatus | undefined }) {
+// The status comes from the findings first. The exit code only decides when nothing was
+// listed: the server's audit exits 1 only for critical findings, so a clean exit can still
+// hide high ones, and the counts must win.
+function StatusBadge({ report, counts }: { report: AuditStatus | undefined; counts: SeverityCounts }) {
   if (!report) return <Badge label="No report" />;
   if (report.running) return <Badge label="Running" tone="accent" />;
-  if (report.exit_code === null) return <Badge label="Finished" />;
+  if (counts.critical + counts.high > 0) return <Badge label="Findings" tone="danger" />;
+  if (counts.medium > 0) return <Badge label="Review" tone="accent" />;
+  if (report.exit_code === null) return <Badge label="Saved report" />;
   if (report.exit_code === 0) return <Badge label="Clean" tone="done" />;
   if (report.exit_code === 1) return <Badge label="Findings" tone="danger" />;
   return <Badge label={`Exit ${report.exit_code}`} tone="danger" />;

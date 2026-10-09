@@ -45,7 +45,7 @@ export type ThemesResponse = {
 // CPU, memory, disk, load and uptime come from psutil on the host, so any of them can be missing.
 export type SystemStats = {
   hostname?: string;
-  platform_label?: string;
+  platform?: string;
   cpu_count?: number | null;
   cpu_percent?: number | null;
   load_avg?: number[];

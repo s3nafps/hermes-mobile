@@ -14,7 +14,7 @@ type Props = {
 export function VpsHealth({ stats }: Props) {
   if (!stats) return null;
 
-  const identity = [stats.hostname, stats.platform_label].filter(Boolean).join(' · ');
+  const identity = [stats.hostname, stats.platform].filter(Boolean).join(' · ');
 
   return (
     <Card style={{ gap: 16 }}>

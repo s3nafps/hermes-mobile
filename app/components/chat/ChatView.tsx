@@ -1,13 +1,19 @@
 import { router } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 import { useEffect, useRef, useState } from 'react';
-import { FlatList, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from 'react-native';
+import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
+import { AttachmentChip } from '@/components/chat/AttachmentChip';
+import { detachAttachment, pickDocument, pickPhoto, uploadAttachment, type PendingAttachment, type PickedFile } from '@/components/chat/attachments';
 import { ModelSheet } from '@/components/chat/ModelSheet';
+import { Badge, Button, EmptyState, InlineNotice, LoadingState, Sheet, StatusDot } from '@/components/ui';
 import { MONO, tokens } from '@/constants/tokens';
 import { useChat } from '@/lib/chat/ChatProvider';
 import type { ChatItem } from '@/lib/chat/reducer';
+import { useGateway } from '@/lib/gateway';
 import { messageOf } from '@/lib/gateway/hooks';
-import { Badge, EmptyState, InlineNotice, LoadingState, StatusDot } from '@/components/ui';
+
+const ATTACH_ICON = { ios: 'paperclip', android: 'attach_file', web: 'attach_file' } as const;
 
 // A full conversation with one live session: history, the streaming reply,
 // tool activity, and the composer. The session itself lives in ChatProvider.
@@ -15,11 +21,14 @@ import { Badge, EmptyState, InlineNotice, LoadingState, StatusDot } from '@/comp
 // clear. The stack route sits under a native header (88); a tab has none (0).
 export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyboardOffset?: number }) {
   const chat = useChat();
+  const { rpc } = useGateway();
   const session = chat.state.sessions[liveId];
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [modelOpen, setModelOpen] = useState(false);
+  const [attachOpen, setAttachOpen] = useState(false);
+  const [pending, setPending] = useState<PendingAttachment[]>([]);
   const listRef = useRef<FlatList<ChatItem>>(null);
 
   useEffect(() => {
@@ -33,19 +42,61 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
     : session.items;
 
   const activity = session.thinking || session.statusLine || (session.running ? 'Working…' : '');
-  const canStop = session.running && !draft.trim();
+  const ready = pending.filter((item) => item.status === 'ready');
+  const uploading = pending.some((item) => item.status === 'uploading');
+  const failed = pending.some((item) => item.status === 'failed');
+  const hasText = draft.trim().length > 0;
+  const canStop = session.running && !hasText && pending.length === 0;
+  const canSend = !sending && !uploading && !failed && (hasText || ready.length > 0);
+
+  // Picks a photo or file, then uploads it straight away so the message can go out at once.
+  const attach = async (pick: () => Promise<PickedFile | null>) => {
+    setAttachOpen(false);
+    setError(null);
+    let file: PickedFile | null;
+    try {
+      file = await pick();
+    } catch (caught) {
+      setError(messageOf(caught));
+      return;
+    }
+    if (!file) return;
+    if (!rpc) {
+      setError('Not connected to the gateway.');
+      return;
+    }
+    const picked = file;
+    const key = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    setPending((list) => [...list, { key, name: picked.name, kind: picked.kind, status: 'uploading' }]);
+    try {
+      const uploaded = await uploadAttachment(rpc, liveId, picked);
+      setPending((list) => list.map((item) => (item.key === key ? { ...item, status: 'ready', ...uploaded } : item)));
+    } catch (caught) {
+      setPending((list) =>
+        list.map((item) => (item.key === key ? { ...item, status: 'failed', error: messageOf(caught) } : item)),
+      );
+    }
+  };
+
+  const removeAttachment = (item: PendingAttachment) => {
+    setPending((list) => list.filter((entry) => entry.key !== item.key));
+    if (rpc) void detachAttachment(rpc, liveId, item);
+  };
 
   const send = async () => {
+    if (!canSend) return;
     const text = draft.trim();
-    if (!text || sending) return;
+    const attachments = ready.map(({ name, kind, refText }) => ({ name, kind, refText }));
     setSending(true);
     setError(null);
     setDraft('');
+    setPending([]);
     try {
-      await chat.submit(liveId, text);
+      await chat.submit(liveId, text, attachments);
     } catch (caught) {
       setError(messageOf(caught));
       setDraft(text);
+      setPending(ready);
     } finally {
       setSending(false);
     }
@@ -134,8 +185,6 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
 
       <View
         style={{
-          flexDirection: 'row',
-          alignItems: 'flex-end',
           gap: 8,
           padding: 10,
           paddingBottom: Platform.OS === 'ios' ? 22 : 10,
@@ -143,53 +192,97 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
           borderTopColor: tokens.line,
           backgroundColor: tokens.surface,
         }}>
-        <TextInput
-          value={draft}
-          onChangeText={setDraft}
-          multiline
-          placeholder="Message Hermes"
-          placeholderTextColor={tokens.textMuted}
-          accessibilityLabel="Message"
-          style={{
-            flex: 1,
-            maxHeight: 140,
-            minHeight: 44,
-            borderWidth: 1,
-            borderColor: '#3A4150',
-            borderRadius: 14,
-            paddingHorizontal: 14,
-            paddingVertical: 10,
-            color: tokens.text,
-            backgroundColor: tokens.bg,
-            fontSize: 16,
-          }}
-        />
-        {canStop ? (
+        {pending.length > 0 ? (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 8 }}>
+            {pending.map((item) => (
+              <AttachmentChip
+                key={item.key}
+                name={item.name}
+                kind={item.kind}
+                status={item.status}
+                error={item.error}
+                onRemove={() => removeAttachment(item)}
+              />
+            ))}
+          </ScrollView>
+        ) : null}
+        {failed ? (
+          <Text style={{ color: tokens.danger, fontSize: 12 }}>Remove the file that could not be attached to send.</Text>
+        ) : null}
+
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
           <Pressable
-            onPress={() => void stop()}
+            onPress={() => setAttachOpen(true)}
+            disabled={sending}
             accessibilityRole="button"
-            accessibilityLabel="Stop the reply"
-            style={{ height: 44, paddingHorizontal: 16, borderRadius: 14, borderWidth: 1, borderColor: tokens.danger, justifyContent: 'center' }}>
-            <Text style={{ color: tokens.danger, fontWeight: '600' }}>Stop</Text>
-          </Pressable>
-        ) : (
-          <Pressable
-            onPress={() => void send()}
-            disabled={!draft.trim() || sending}
-            accessibilityRole="button"
-            accessibilityLabel="Send"
+            accessibilityLabel="Attach a photo or file"
             style={{
+              width: 44,
               height: 44,
-              paddingHorizontal: 18,
               borderRadius: 14,
-              backgroundColor: tokens.accent,
+              borderWidth: 1,
+              borderColor: '#3A4150',
+              alignItems: 'center',
               justifyContent: 'center',
-              opacity: !draft.trim() || sending ? 0.5 : 1,
+              backgroundColor: tokens.bg,
+              opacity: sending ? 0.5 : 1,
             }}>
-            <Text style={{ color: tokens.accentText, fontWeight: '600' }}>{session.running ? 'Queue' : 'Send'}</Text>
+            <SymbolView name={ATTACH_ICON} tintColor={tokens.textMuted} size={22} />
           </Pressable>
-        )}
+          <TextInput
+            value={draft}
+            onChangeText={setDraft}
+            multiline
+            placeholder="Message Hermes"
+            placeholderTextColor={tokens.textMuted}
+            accessibilityLabel="Message"
+            style={{
+              flex: 1,
+              maxHeight: 140,
+              minHeight: 44,
+              borderWidth: 1,
+              borderColor: '#3A4150',
+              borderRadius: 14,
+              paddingHorizontal: 14,
+              paddingVertical: 10,
+              color: tokens.text,
+              backgroundColor: tokens.bg,
+              fontSize: 16,
+            }}
+          />
+          {canStop ? (
+            <Pressable
+              onPress={() => void stop()}
+              accessibilityRole="button"
+              accessibilityLabel="Stop the reply"
+              style={{ height: 44, paddingHorizontal: 16, borderRadius: 14, borderWidth: 1, borderColor: tokens.danger, justifyContent: 'center' }}>
+              <Text style={{ color: tokens.danger, fontWeight: '600' }}>Stop</Text>
+            </Pressable>
+          ) : (
+            <Pressable
+              onPress={() => void send()}
+              disabled={!canSend}
+              accessibilityRole="button"
+              accessibilityLabel="Send"
+              style={{
+                height: 44,
+                paddingHorizontal: 18,
+                borderRadius: 14,
+                backgroundColor: tokens.accent,
+                justifyContent: 'center',
+                opacity: canSend ? 1 : 0.5,
+              }}>
+              <Text style={{ color: tokens.accentText, fontWeight: '600' }}>{session.running ? 'Queue' : 'Send'}</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
+
+      <Sheet visible={attachOpen} onClose={() => setAttachOpen(false)} title="Attach">
+        <Button label="Photo library" onPress={() => void attach(pickPhoto)} />
+        <Button label="Document" variant="secondary" onPress={() => void attach(pickDocument)} />
+        <Button label="Cancel" variant="ghost" onPress={() => setAttachOpen(false)} />
+      </Sheet>
     </KeyboardAvoidingView>
   );
 }
@@ -198,12 +291,21 @@ function ChatRow({ item }: { item: ChatItem }) {
   switch (item.kind) {
     case 'user':
       return (
-        <View style={{ alignSelf: 'flex-end', maxWidth: '84%', gap: 4 }}>
-          <View style={{ backgroundColor: tokens.surfaceRaised, borderRadius: 16, borderBottomRightRadius: 4, paddingHorizontal: 14, paddingVertical: 10 }}>
-            <Text selectable style={{ color: tokens.text, fontSize: 15, lineHeight: 21 }}>
-              {item.text}
-            </Text>
-          </View>
+        <View style={{ alignSelf: 'flex-end', maxWidth: '84%', gap: 6, alignItems: 'flex-end' }}>
+          {item.attachments?.length ? (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, justifyContent: 'flex-end' }}>
+              {item.attachments.map((attachment, index) => (
+                <AttachmentChip key={`${attachment.name}-${index}`} name={attachment.name} kind={attachment.kind} />
+              ))}
+            </View>
+          ) : null}
+          {item.text ? (
+            <View style={{ backgroundColor: tokens.surfaceRaised, borderRadius: 16, borderBottomRightRadius: 4, paddingHorizontal: 14, paddingVertical: 10 }}>
+              <Text selectable style={{ color: tokens.text, fontSize: 15, lineHeight: 21 }}>
+                {item.text}
+              </Text>
+            </View>
+          ) : null}
           {item.failed ? <Text style={{ color: tokens.danger, fontSize: 12 }}>Not sent. Check the connection and try again.</Text> : null}
         </View>
       );

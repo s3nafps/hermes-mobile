@@ -1,9 +1,16 @@
 import type { RpcEvent } from '@/lib/gateway/rpc';
 
-import { PROMPT_WINDOW_MS, type ApprovalChoice, type SessionInfo, type Usage, type WireMessage } from './types';
+import {
+  PROMPT_WINDOW_MS,
+  type ApprovalChoice,
+  type SentAttachment,
+  type SessionInfo,
+  type Usage,
+  type WireMessage,
+} from './types';
 
 export type ChatItem =
-  | { kind: 'user'; id: string; text: string; failed?: boolean }
+  | { kind: 'user'; id: string; text: string; failed?: boolean; attachments?: SentAttachment[] }
   | { kind: 'assistant'; id: string; text: string; status: 'complete' | 'interrupted' | 'error'; usage?: Usage }
   | { kind: 'tool'; id: string; toolId: string; name: string; context: string; done: boolean; summary?: string; durationS?: number; risk?: string }
   | { kind: 'notice'; id: string; text: string; tone: 'info' | 'error' };
@@ -74,7 +81,7 @@ export type ChatAction =
       inflight: string | null;
       queued: string | null;
     }
-  | { type: 'local_user'; liveId: string; id: string; text: string }
+  | { type: 'local_user'; liveId: string; id: string; text: string; attachments?: SentAttachment[] }
   | { type: 'user_failed'; liveId: string; id: string; message: string }
   | { type: 'queued'; liveId: string; text: string }
   | { type: 'drop_prompt'; id: string }
@@ -175,7 +182,7 @@ export function reduce(state: ChatState, action: ChatAction): ChatState {
 
     case 'local_user': {
       const session = ensure(state, action.liveId);
-      const item: ChatItem = { kind: 'user', id: action.id, text: action.text };
+      const item: ChatItem = { kind: 'user', id: action.id, text: action.text, attachments: action.attachments };
       return put(state, { ...session, items: [...session.items, item], lastError: null });
     }
 

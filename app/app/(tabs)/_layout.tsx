@@ -6,6 +6,7 @@ import { PanResponder, View } from 'react-native';
 
 import { ConnectionBanner } from '@/components/gateway/ConnectionBanner';
 import { PillTabBar } from '@/components/navigation/PillTabBar';
+import { useKeyboardHeight } from '@/components/navigation/useKeyboardHeight';
 import { tokens } from '@/constants/tokens';
 
 const ICON = {
@@ -22,9 +23,16 @@ const TAB_PATHS = ['/', '/bots', '/inbox', '/tasks', '/control'] as const;
 // Minimum horizontal travel, in points, before a swipe changes tab.
 const SWIPE_DISTANCE = 60;
 
+// Space the floating button keeps above the keyboard: the chat composer is about 80 points tall.
+const CHAT_COMPOSER_LIFT = 84;
+const DEFAULT_LIFT = 16;
+
 export default function TabLayout() {
   const pathname = usePathname();
   const index = TAB_PATHS.indexOf(pathname as (typeof TAB_PATHS)[number]);
+  const keyboardHeight = useKeyboardHeight();
+  // The Chat tab has its composer at the bottom, so its floating button sits above that.
+  const lift = index === 0 ? CHAT_COMPOSER_LIFT : DEFAULT_LIFT;
 
   // Rebuilt when the tab changes, so a swipe always starts from the tab on screen.
   const swipe = useMemo(
@@ -46,7 +54,9 @@ export default function TabLayout() {
   return (
     <View style={{ flex: 1, backgroundColor: tokens.bg }} {...swipe.panHandlers}>
       <ConnectionBanner />
-      <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <PillTabBar {...props} />}>
+      <Tabs
+        screenOptions={{ headerShown: false }}
+        tabBar={(props) => <PillTabBar {...props} keyboardHeight={keyboardHeight} lift={lift} />}>
         <Tabs.Screen
           name="index"
           options={{

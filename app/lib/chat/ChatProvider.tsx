@@ -1,17 +1,20 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, type ReactNode } from 'react';
 
-import { RpcError, type RpcClient } from '@/lib/gateway/rpc';
+import { RPC_LOST, RPC_NOT_CONNECTED, RpcError, type RpcClient } from '@/lib/gateway/rpc';
 import { useGateway } from '@/lib/gateway/GatewayProvider';
 
 import { EMPTY_STATE, reduce, type ChatState, type PendingPrompt } from './reducer';
 import type { ApprovalChoice, SentAttachment, SessionInfo, WireMessage } from './types';
 
+// sent: the gateway took the message. failed: it was rejected or never left the phone, so it was
+// not sent. unknown: the connection dropped before an answer, so it may have reached the gateway.
+export type SendOutcome = 'sent' | 'failed' | 'unknown';
+
 export type ChatApi = {
   state: ChatState;
   createSession: () => Promise<string>;
   attach: (storedKey: string) => Promise<string>;
-  // Resolves true when the gateway took the message, false when it was rejected.
-  submit: (liveId: string, text: string, attachments?: SentAttachment[]) => Promise<boolean>;
+  submit: (liveId: string, text: string, attachments?: SentAttachment[]) => Promise<SendOutcome>;
   interrupt: (liveId: string) => Promise<void>;
   answerApproval: (prompt: PendingPrompt, choice: ApprovalChoice) => Promise<'answered' | 'expired'>;
   answerClarify: (prompt: PendingPrompt, answer: string) => Promise<void>;
@@ -20,6 +23,8 @@ export type ChatApi = {
   setTitle: (liveId: string, title: string) => Promise<void>;
   closeSession: (liveId: string) => Promise<void>;
   dismissNotice: (id: string) => void;
+  // Removes one message from the conversation on screen, for example a failed send before a retry.
+  dropItem: (liveId: string, id: string) => void;
 };
 
 const ChatContext = createContext<ChatApi | null>(null);
@@ -33,7 +38,9 @@ type ResumeResult = {
   messages?: WireMessage[];
   info?: Partial<SessionInfo>;
   running?: boolean;
-  inflight?: { assistant?: string } | null;
+  // "waiting" means the agent is blocked on a prompt. The prompt itself is not in the result.
+  status?: string;
+  inflight?: { user?: string; assistant?: string } | null;
   queued?: { user?: string } | null;
 };
 
@@ -44,7 +51,7 @@ type CreateResult = {
 };
 
 function requireConnected(rpc: RpcClient | null): RpcClient {
-  if (!rpc) throw new RpcError(0, 'Not connected to the gateway.');
+  if (!rpc) throw new RpcError(RPC_NOT_CONNECTED, 'Not connected to the gateway.');
   return rpc;
 }
 
@@ -72,7 +79,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       info: result.info ?? {},
       running: result.running ?? false,
       inflight: result.inflight?.assistant ?? null,
+      inflightUser: result.inflight?.user ?? null,
       queued: result.queued?.user ?? null,
+      waiting: result.status === 'waiting',
     });
     return result.session_id;
   }, []);
@@ -104,7 +113,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       info: result.info ?? {},
       running: false,
       inflight: null,
+      inflightUser: null,
       queued: null,
+      waiting: false,
     });
     return result.session_id;
   }, [rpc]);
@@ -119,26 +130,33 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   );
 
   const submit = useCallback(
-    async (liveId: string, text: string, attachments: SentAttachment[] = []): Promise<boolean> => {
-      const client = requireConnected(rpc);
+    async (liveId: string, text: string, attachments: SentAttachment[] = []): Promise<SendOutcome> => {
       const trimmed = text.trim();
-      if (!trimmed && attachments.length === 0) return false;
+      if (!trimmed && attachments.length === 0) return 'failed';
       // The agent needs some words to act on, so files sent alone get a short request.
       const body = trimmed || 'Please look at the attached files.';
       const refs = attachments.flatMap((attachment) => (attachment.refText ? [attachment.refText] : []));
       const localId = nextLocalId();
       dispatch({ type: 'local_user', liveId, id: localId, text: trimmed, attachments });
       try {
+        // Checked here, not before the bubble is shown, so a missing connection marks the bubble failed.
+        const client = requireConnected(rpc);
         const result = await client.call<{ status: string }>('prompt.submit', {
           session_id: liveId,
           text: [body, ...refs].join('\n'),
         });
+        dispatch({ type: 'user_sent', liveId, id: localId });
         if (result.status === 'queued') dispatch({ type: 'queued', liveId, text: body });
-        return true;
+        return 'sent';
       } catch (caught) {
+        if (caught instanceof RpcError && caught.code === RPC_LOST) {
+          // No answer came back, so the gateway may already have the message. It is not resent for the user.
+          dispatch({ type: 'user_unknown', liveId, id: localId });
+          return 'unknown';
+        }
         const message = caught instanceof Error ? caught.message : 'The message could not be sent.';
         dispatch({ type: 'user_failed', liveId, id: localId, message });
-        return false;
+        return 'failed';
       }
     },
     [rpc, nextLocalId],
@@ -216,6 +234,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   );
 
   const dismissNotice = useCallback((id: string) => dispatch({ type: 'dismiss_notice', id }), []);
+  const dropItem = useCallback((liveId: string, id: string) => dispatch({ type: 'remove_item', liveId, id }), []);
 
   const value = useMemo<ChatApi>(
     () => ({
@@ -231,6 +250,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setTitle,
       closeSession,
       dismissNotice,
+      dropItem,
     }),
     [
       state,
@@ -245,6 +265,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setTitle,
       closeSession,
       dismissNotice,
+      dropItem,
     ],
   );
 

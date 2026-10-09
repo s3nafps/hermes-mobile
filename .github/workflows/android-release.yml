@@ -11,7 +11,6 @@ on:
       version:
         description: 'Version to release, for example 0.1.0'
         required: true
-        default: '0.1.0'
 
 permissions:
   contents: write
@@ -30,6 +29,9 @@ jobs:
     steps:
       - name: Check out the code
         uses: actions/checkout@v4
+        with:
+          # The build runs third-party code (npm and Gradle), so it does not keep the token.
+          persist-credentials: false
 
       - name: Work out the version
         id: version
@@ -70,6 +72,9 @@ jobs:
         run: |
           npx tsc --noEmit
           CI=1 npx expo lint
+
+      - name: Unit tests
+        run: npm test
 
       - name: Set the app version and version code
         env:
@@ -115,6 +120,10 @@ jobs:
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: Hermes Mobile ${{ steps.version.outputs.version }}
+          # The release is built from the commit that was run, not the default branch's head.
+          target_commitish: ${{ github.sha }}
+          # A repeat run for an existing version fails instead of replacing its files.
+          overwrite_files: false
           prerelease: true
           generate_release_notes: true
           body: |

@@ -1,3 +1,4 @@
+import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useEffect, useRef, useState } from 'react';
@@ -5,12 +6,13 @@ import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, 
 
 import { AttachmentChip } from '@/components/chat/AttachmentChip';
 import { detachAttachment, pickDocument, pickPhoto, uploadAttachment, type PendingAttachment, type PickedFile } from '@/components/chat/attachments';
+import { Markdown } from '@/components/chat/Markdown';
 import { ModelSheet } from '@/components/chat/ModelSheet';
 import { useKeyboardHeight } from '@/components/navigation/useKeyboardHeight';
 import { Badge, Button, EmptyState, InlineNotice, LoadingState, Sheet, StatusDot } from '@/components/ui';
 import { MONO, tokens } from '@/constants/tokens';
 import { useChat } from '@/lib/chat/ChatProvider';
-import type { ChatItem } from '@/lib/chat/reducer';
+import { livePrompts, type ChatItem } from '@/lib/chat/reducer';
 import { useGateway } from '@/lib/gateway';
 import { messageOf } from '@/lib/gateway/hooks';
 
@@ -19,6 +21,8 @@ const ATTACH_ICON = { ios: 'paperclip', android: 'attach_file', web: 'attach_fil
 // Right-hand space the composer leaves while the floating tab button sits above the keyboard:
 // the button's inset (16), its width (52) and a gap (8). The button then never covers Send.
 const FLOATING_BUTTON_GUTTER = 76;
+
+type UserItem = Extract<ChatItem, { kind: 'user' }>;
 
 // A full conversation with one live session: history, the streaming reply,
 // tool activity, and the composer. The session itself lives in ChatProvider.
@@ -34,7 +38,10 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
   const [modelOpen, setModelOpen] = useState(false);
   const [attachOpen, setAttachOpen] = useState(false);
   const [pending, setPending] = useState<PendingAttachment[]>([]);
+  const [actionItem, setActionItem] = useState<ChatItem | null>(null);
   const listRef = useRef<FlatList<ChatItem>>(null);
+  // True while the reader is at the bottom. Only then does a new message or token scroll the list.
+  const nearBottom = useRef(true);
   const keyboardHeight = useKeyboardHeight();
 
   // Uploads that finish after their chip was removed, or after this chat was left, are
@@ -58,9 +65,13 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
     };
   }, [liveId]);
 
+  // Follows the conversation, unless the reader has scrolled up to look at earlier text.
   useEffect(() => {
-    listRef.current?.scrollToEnd({ animated: true });
-  }, [session?.items.length, session?.streaming]);
+    if (nearBottom.current) listRef.current?.scrollToEnd({ animated: true });
+  }, [session?.items.length]);
+  useEffect(() => {
+    if (nearBottom.current) listRef.current?.scrollToEnd({ animated: false });
+  }, [session?.streaming]);
 
   if (!session) return <LoadingState label="Opening chat…" />;
 
@@ -68,7 +79,12 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
     ? [...session.items, { kind: 'assistant', id: 'streaming', text: session.streaming, status: 'complete' }]
     : session.items;
 
-  const activity = session.thinking || session.statusLine || (session.running ? 'Working…' : '');
+  // The agent is blocked on a prompt this screen never showed, for example one raised during a drop.
+  const missedAnswer = session.waiting && !livePrompts(chat.state.prompts, Date.now()).some((prompt) => prompt.liveId === liveId);
+  const activity =
+    session.thinking ||
+    session.statusLine ||
+    (missedAnswer ? 'Waiting for an answer you did not see. Stop to cancel.' : session.running ? 'Working…' : '');
   const ready = pending.filter((item) => item.status === 'ready');
   const uploading = pending.some((item) => item.status === 'uploading');
   const failed = pending.some((item) => item.status === 'failed');
@@ -94,7 +110,8 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
     }
     const picked = file;
     const key = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    setPending((list) => [...list, { key, name: picked.name, kind: picked.kind, status: 'uploading' }]);
+    const previewUri = picked.kind === 'image' ? picked.uri : undefined;
+    setPending((list) => [...list, { key, name: picked.name, kind: picked.kind, previewUri, status: 'uploading' }]);
     try {
       const uploaded = await uploadAttachment(rpc, liveId, picked);
       if (dropped.current.delete(key) || !alive.current) {
@@ -123,15 +140,18 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
   const send = async () => {
     if (!canSend) return;
     const text = draft.trim();
-    const attachments = ready.map(({ name, kind, refText }) => ({ name, kind, refText }));
+    const attachments = ready.map(({ name, kind, refText, previewUri }) => ({ name, kind, refText, previewUri }));
+    // Sending brings the reader back to the bottom, where the new message appears.
+    nearBottom.current = true;
     setSending(true);
     setError(null);
     setDraft('');
     setPending([]);
     try {
-      // A rejected send keeps its "Not sent" bubble and gives the draft and files back.
-      const sent = await chat.submit(liveId, text, attachments);
-      if (!sent) {
+      // A send the gateway rejected keeps its "Not sent" bubble and gives the draft and files back.
+      // One that may have arrived keeps its bubble only, so the user does not send it twice.
+      const outcome = await chat.submit(liveId, text, attachments);
+      if (outcome === 'failed') {
         setDraft(text);
         setPending(ready);
       }
@@ -141,6 +161,21 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
       setPending(ready);
     } finally {
       setSending(false);
+    }
+  };
+
+  // Sends a failed message again. The failed bubble goes first, so the chat does not show it twice.
+  const retry = async (item: UserItem) => {
+    setActionItem(null);
+    setError(null);
+    chat.dropItem(liveId, item.id);
+    await chat.submit(liveId, item.text, item.attachments ?? []);
+  };
+
+  const copy = async (item: ChatItem | null) => {
+    setActionItem(null);
+    if (item && (item.kind === 'user' || item.kind === 'assistant' || item.kind === 'notice')) {
+      await Clipboard.setStringAsync(item.text);
     }
   };
 
@@ -195,13 +230,29 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16, gap: 12, flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
+        onScroll={(event) => {
+          const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+          nearBottom.current = contentSize.height - contentOffset.y - layoutMeasurement.height < 80;
+        }}
+        onScrollBeginDrag={() => {
+          // A drag means the reader is looking at earlier text, so stop following the reply.
+          nearBottom.current = false;
+        }}
+        scrollEventThrottle={100}
         ListEmptyComponent={
           <EmptyState
             title="Start a conversation"
             body="Messages stay in this chat, so you can come back to them later."
           />
         }
-        renderItem={({ item }) => <ChatRow item={item} />}
+        renderItem={({ item }) => (
+          <ChatRow
+            item={item}
+            onLongPress={setActionItem}
+            onRetry={(user) => void retry(user)}
+            onDismiss={(user) => chat.dropItem(liveId, user.id)}
+          />
+        )}
       />
 
       {activity ? (
@@ -210,6 +261,12 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
           <Text numberOfLines={1} style={{ color: tokens.textMuted, fontSize: 13, flex: 1 }}>
             {activity}
           </Text>
+          {session.running && !canStop ? (
+            // The composer shows Queue while there is text, so Stop lives here, always in reach.
+            <Pressable onPress={() => void stop()} accessibilityRole="button" accessibilityLabel="Stop the reply" hitSlop={8}>
+              <Text style={{ color: tokens.danger, fontSize: 13, fontWeight: '600' }}>Stop</Text>
+            </Pressable>
+          ) : null}
         </View>
       ) : null}
 
@@ -242,6 +299,7 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
                 key={item.key}
                 name={item.name}
                 kind={item.kind}
+                previewUri={item.previewUri}
                 status={item.status}
                 error={item.error}
                 onRemove={() => removeAttachment(item)}
@@ -326,11 +384,26 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
         <Button label="Document" variant="secondary" onPress={() => void attach(pickDocument)} />
         <Button label="Cancel" variant="ghost" onPress={() => setAttachOpen(false)} />
       </Sheet>
+
+      <Sheet visible={actionItem !== null} onClose={() => setActionItem(null)} title="Message">
+        <Button label="Copy text" variant="secondary" onPress={() => void copy(actionItem)} />
+        {actionItem?.kind === 'user' && (actionItem.failed || actionItem.unknown) ? (
+          <Button label="Send again" onPress={() => void retry(actionItem)} />
+        ) : null}
+        <Button label="Cancel" variant="ghost" onPress={() => setActionItem(null)} />
+      </Sheet>
     </KeyboardAvoidingView>
   );
 }
 
-function ChatRow({ item }: { item: ChatItem }) {
+type RowProps = {
+  item: ChatItem;
+  onLongPress: (item: ChatItem) => void;
+  onRetry: (item: UserItem) => void;
+  onDismiss: (item: UserItem) => void;
+};
+
+function ChatRow({ item, onLongPress, onRetry, onDismiss }: RowProps) {
   switch (item.kind) {
     case 'user':
       return (
@@ -338,27 +411,53 @@ function ChatRow({ item }: { item: ChatItem }) {
           {item.attachments?.length ? (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, justifyContent: 'flex-end' }}>
               {item.attachments.map((attachment, index) => (
-                <AttachmentChip key={`${attachment.name}-${index}`} name={attachment.name} kind={attachment.kind} />
+                <AttachmentChip
+                  key={`${attachment.name}-${index}`}
+                  name={attachment.name}
+                  kind={attachment.kind}
+                  previewUri={attachment.previewUri}
+                />
               ))}
             </View>
           ) : null}
           {item.text ? (
-            <View style={{ backgroundColor: tokens.surfaceRaised, borderRadius: 16, borderBottomRightRadius: 4, paddingHorizontal: 14, paddingVertical: 10 }}>
-              <Text selectable style={{ color: tokens.text, fontSize: 15, lineHeight: 21 }}>
-                {item.text}
+            <Pressable
+              onLongPress={() => onLongPress(item)}
+              delayLongPress={350}
+              accessibilityHint="Long press for copy and other actions"
+              style={{ backgroundColor: tokens.surfaceRaised, borderRadius: 16, borderBottomRightRadius: 4, paddingHorizontal: 14, paddingVertical: 10 }}>
+              <Text style={{ color: tokens.text, fontSize: 15, lineHeight: 21 }}>{item.text}</Text>
+            </Pressable>
+          ) : null}
+          {item.pending ? <Text style={{ color: tokens.textMuted, fontSize: 12 }}>Sending…</Text> : null}
+          {item.failed || item.unknown ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <Text style={{ color: item.failed ? tokens.danger : tokens.textMuted, fontSize: 12 }}>
+                {item.failed ? 'Not sent.' : 'Not sure it was sent.'}
               </Text>
+              <Pressable onPress={() => onRetry(item)} accessibilityRole="button" accessibilityLabel="Send this message again" hitSlop={8}>
+                <Text style={{ color: tokens.accent, fontSize: 12, fontWeight: '600' }}>{item.failed ? 'Retry' : 'Send again'}</Text>
+              </Pressable>
+              {item.unknown ? (
+                <Pressable
+                  onPress={() => onDismiss(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel="It was already sent. Remove this copy"
+                  hitSlop={8}>
+                  <Text style={{ color: tokens.accent, fontSize: 12, fontWeight: '600' }}>It was sent</Text>
+                </Pressable>
+              ) : null}
             </View>
           ) : null}
-          {item.failed ? <Text style={{ color: tokens.danger, fontSize: 12 }}>Not sent. Check the connection and try again.</Text> : null}
         </View>
       );
     case 'assistant':
       return (
-        <View style={{ maxWidth: '96%', gap: 6 }}>
-          <MessageText text={item.text} />
+        <Pressable onLongPress={() => onLongPress(item)} delayLongPress={350} style={{ maxWidth: '96%', gap: 6 }}>
+          <Markdown source={item.text} />
           {item.status === 'error' ? <Badge label="Failed" tone="danger" /> : null}
           {item.status === 'interrupted' ? <Badge label="Stopped" tone="accent" /> : null}
-        </View>
+        </Pressable>
       );
     case 'tool':
       return (
@@ -390,32 +489,4 @@ function ChatRow({ item }: { item: ChatItem }) {
     default:
       return null;
   }
-}
-
-// Renders plain text, with fenced code blocks set in monospace.
-function MessageText({ text }: { text: string }) {
-  const parts = text.split('```');
-  return (
-    <View style={{ gap: 8 }}>
-      {parts.map((part, index) => {
-        if (index % 2 === 1) {
-          const code = part.replace(/^[\w-]*\n/, '').replace(/\n$/, '');
-          return (
-            <View key={index} style={{ backgroundColor: tokens.bg, borderWidth: 1, borderColor: tokens.line, borderRadius: 10, padding: 10 }}>
-              <Text selectable style={{ color: tokens.text, fontFamily: MONO, fontSize: 13, lineHeight: 19 }}>
-                {code}
-              </Text>
-            </View>
-          );
-        }
-        const body = part.trim();
-        if (!body) return null;
-        return (
-          <Text key={index} selectable style={{ color: tokens.text, fontSize: 15, lineHeight: 22 }}>
-            {body}
-          </Text>
-        );
-      })}
-    </View>
-  );
 }

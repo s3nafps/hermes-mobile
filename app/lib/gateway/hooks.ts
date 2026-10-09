@@ -1,4 +1,6 @@
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 
 import { useGateway } from './GatewayProvider';
 import type { RpcEvent } from './rpc';
@@ -29,8 +31,16 @@ export function useGatewayQuery<T>(
     loading: load !== null,
   });
   const [tick, setTick] = useState(0);
+  const live = useLiveScreen();
+  const wasLive = useRef(live);
   const loadRef = useRef(load);
   loadRef.current = load;
+
+  // Refreshes once when the screen comes back, so it never shows data from before it was hidden.
+  useEffect(() => {
+    if (live && !wasLive.current) setTick((t) => t + 1);
+    wasLive.current = live;
+  }, [live]);
 
   useEffect(() => {
     const run = loadRef.current;
@@ -56,16 +66,38 @@ export function useGatewayQuery<T>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tick, load === null, ...deps]);
 
+  // Polling only runs while the screen is on top and the app is in the foreground.
   useEffect(() => {
-    if (!options.pollMs) return;
+    if (!options.pollMs || !live) return;
     const id = setInterval(() => setTick((t) => t + 1), options.pollMs);
     return () => clearInterval(id);
-  }, [options.pollMs]);
+  }, [options.pollMs, live]);
 
   const refetch = useCallback(() => setTick((t) => t + 1), []);
   const setData = useCallback((data: T) => setState((prev) => ({ ...prev, data, error: null })), []);
 
   return { ...state, refetch, setData };
+}
+
+// True while the app is in the foreground and this screen is on top. Timers that
+// refresh gateway data check it, so a hidden tab or a backgrounded app stops asking.
+export function useLiveScreen(): boolean {
+  const [appActive, setAppActive] = useState(AppState.currentState === 'active');
+  const [screenFocused, setScreenFocused] = useState(true);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => setAppActive(state === 'active'));
+    return () => subscription.remove();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      setScreenFocused(true);
+      return () => setScreenFocused(false);
+    }, []),
+  );
+
+  return appActive && screenFocused;
 }
 
 // Subscribes to the live gateway event stream for as long as the component is mounted.

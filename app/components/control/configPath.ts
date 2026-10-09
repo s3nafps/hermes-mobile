@@ -30,14 +30,8 @@ export function cloneConfig(source: ConfigObject | undefined): ConfigObject {
   return source ? (JSON.parse(JSON.stringify(source)) as ConfigObject) : {};
 }
 
-// Names that hold secrets. Their values are never shown, only set or not set.
-const SECRET_NAME = /(api_key|token|secret|password)/i;
-
-// Keys ending in _env name an environment variable. The name itself is not a secret.
-export function isSecretKey(dotted: string): boolean {
-  if (/_env$/.test(dotted)) return false;
-  return SECRET_NAME.test(dotted);
-}
+// Which keys hold secrets is decided in one place, so every screen hides the same values.
+export { isSecretKey } from '@/lib/secrets';
 
 // Schema descriptions look like "Agent → Max Turns". The screen only needs the last part.
 export function fieldLabel(description: string): string {

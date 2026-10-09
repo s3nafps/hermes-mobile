@@ -6,7 +6,7 @@ import { MONO, tokens } from '@/constants/tokens';
 import { useChat } from '@/lib/chat/ChatProvider';
 import { livePrompts, type Notice, type PendingPrompt } from '@/lib/chat/reducer';
 import { PROMPT_WINDOW_MS, type ApprovalChoice } from '@/lib/chat/types';
-import { messageOf } from '@/lib/gateway/hooks';
+import { messageOf, useLiveScreen } from '@/lib/gateway/hooks';
 import { Button, Card, EmptyState, InlineNotice, Screen, ScreenTitle, Segmented, Section, Row } from '@/components/ui';
 
 type Tab = 'needs' | 'updates';
@@ -17,10 +17,13 @@ export default function InboxScreen() {
   const chat = useChat();
   const [tab, setTab] = useState<Tab>('needs');
   const [now, setNow] = useState(() => Date.now());
+  // The clock only ticks while this tab is on screen, so the inbox does not re-render in the background.
+  const live = useLiveScreen();
   useEffect(() => {
+    if (!live) return;
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [live]);
 
   const prompts = livePrompts(chat.state.prompts, now);
   const notices = chat.state.notices;

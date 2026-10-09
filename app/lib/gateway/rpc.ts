@@ -10,6 +10,12 @@ export type RpcEvent = {
 
 export type RpcStatus = 'connecting' | 'open' | 'closed';
 
+// Codes the client sets itself. Server errors keep their own codes.
+// RPC_NOT_CONNECTED: the request was never sent, so the gateway did not get it.
+// RPC_LOST: the request was sent but no answer came back. The gateway may still have acted on it.
+export const RPC_NOT_CONNECTED = -1;
+export const RPC_LOST = 0;
+
 export class RpcError extends Error {
   readonly code: number;
 
@@ -41,6 +47,16 @@ type Pending = {
 
 const DEFAULT_TIMEOUT_MS = 60_000;
 const MAX_BACKOFF_MS = 30_000;
+// A socket must stay open this long before its reconnect backoff resets. A gateway that
+// accepts and then drops connections is therefore not retried every second.
+const STABLE_MS = 5_000;
+// While the app is on screen, a silent socket is checked this often.
+const HEARTBEAT_MS = 30_000;
+const PROBE_TIMEOUT_MS = 8_000;
+// A socket that has not finished its handshake by then is abandoned.
+const HANDSHAKE_MS = 10_000;
+// A cheap request that does not run the agent. The gateway answers it at once.
+const PROBE_METHOD = 'session.active_list';
 
 export class RpcClient {
   private readonly options: RpcClientOptions;
@@ -52,7 +68,12 @@ export class RpcClient {
   private status: RpcStatus = 'closed';
   private wantOpen = false;
   private attempts = 0;
+  // Bumped by stop(), so an attempt that was waiting for its URL when the client stopped does nothing.
+  private generation = 0;
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
+  private stableTimer: ReturnType<typeof setTimeout> | null = null;
+  private handshakeTimer: ReturnType<typeof setTimeout> | null = null;
+  private heartbeat: ReturnType<typeof setInterval> | null = null;
 
   constructor(options: RpcClientOptions) {
     this.options = options;
@@ -71,13 +92,39 @@ export class RpcClient {
 
   stop(): void {
     this.wantOpen = false;
-    if (this.retryTimer) clearTimeout(this.retryTimer);
-    this.retryTimer = null;
+    this.generation += 1;
+    this.clearTimers();
     const socket = this.socket;
     this.socket = null;
     socket?.close(1000, 'client closed');
-    this.rejectAll(new RpcError(0, 'Disconnected from the gateway.'));
+    this.rejectAll(new RpcError(RPC_LOST, 'Disconnected from the gateway.'));
     this.setStatus('closed');
+  }
+
+  // The app is on screen or in the background. On screen, a dropped socket reconnects at once
+  // and a silent one is checked on a timer. In the background neither runs.
+  setForeground(active: boolean): void {
+    if (this.heartbeat) clearInterval(this.heartbeat);
+    this.heartbeat = null;
+    if (!active || !this.wantOpen) return;
+    this.wake();
+    this.heartbeat = setInterval(() => void this.probe(), HEARTBEAT_MS);
+  }
+
+  // Reconnects now instead of waiting out the backoff. An open socket is checked instead.
+  wake(): void {
+    if (!this.wantOpen) return;
+    if (this.status === 'open') {
+      void this.probe();
+      return;
+    }
+    // Still asking for the URL. That request has its own deadline, so there is nothing to abandon yet.
+    if (this.status === 'connecting' && !this.socket) return;
+    // A handshake still running is abandoned, and the reconnect starts now.
+    if (this.socket) this.dropSocket();
+    if (this.retryTimer) clearTimeout(this.retryTimer);
+    this.retryTimer = null;
+    void this.open();
   }
 
   onEvent(listener: (event: RpcEvent) => void): () => void {
@@ -91,17 +138,17 @@ export class RpcClient {
   }
 
   // Sends one request and resolves with its result, or rejects with RpcError.
-  call<T = unknown>(method: string, params: Record<string, unknown> = {}): Promise<T> {
+  call<T = unknown>(method: string, params: Record<string, unknown> = {}, timeoutMs?: number): Promise<T> {
     const socket = this.socket;
     if (!socket || socket.readyState !== WebSocket.OPEN) {
-      return Promise.reject(new RpcError(0, 'Not connected to the gateway.'));
+      return Promise.reject(new RpcError(RPC_NOT_CONNECTED, 'Not connected to the gateway.'));
     }
     const id = this.nextId++;
     return new Promise<T>((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pending.delete(id);
-        reject(new RpcError(0, `${method} timed out.`));
-      }, this.options.requestTimeoutMs ?? DEFAULT_TIMEOUT_MS);
+        reject(new RpcError(RPC_LOST, `${method} timed out.`));
+      }, timeoutMs ?? this.options.requestTimeoutMs ?? DEFAULT_TIMEOUT_MS);
       this.pending.set(id, {
         method,
         resolve: resolve as (value: unknown) => void,
@@ -114,11 +161,13 @@ export class RpcClient {
 
   private async open(): Promise<void> {
     if (!this.wantOpen) return;
+    const generation = this.generation;
     this.setStatus('connecting');
     let url: string;
     try {
       url = await this.options.getUrl();
     } catch (error) {
+      if (generation !== this.generation) return;
       this.setStatus('closed');
       const status = (error as { status?: number }).status;
       if (status === 401 || status === 403) {
@@ -131,15 +180,32 @@ export class RpcClient {
       }
       return;
     }
-    if (!this.wantOpen) return;
+    if (!this.wantOpen || generation !== this.generation || this.socket) return;
 
-    const socket = new WebSocket(url);
+    let socket: WebSocket;
+    try {
+      socket = new WebSocket(url);
+    } catch {
+      // The socket could not even be created. Count it as a failed attempt.
+      this.setStatus('closed');
+      if (this.wantOpen) this.scheduleReconnect();
+      return;
+    }
     this.socket = socket;
+    this.handshakeTimer = setTimeout(() => {
+      this.handshakeTimer = null;
+      if (this.socket === socket) this.dropSocket();
+    }, HANDSHAKE_MS);
 
     socket.onopen = () => {
       if (this.socket !== socket) return;
-      this.attempts = 0;
+      this.endHandshake();
       this.setStatus('open');
+      this.endStable();
+      this.stableTimer = setTimeout(() => {
+        this.stableTimer = null;
+        this.attempts = 0;
+      }, STABLE_MS);
     };
     socket.onmessage = (message) => {
       if (this.socket !== socket) return;
@@ -148,7 +214,9 @@ export class RpcClient {
     socket.onclose = (close) => {
       if (this.socket !== socket) return;
       this.socket = null;
-      this.rejectAll(new RpcError(0, 'The connection to the gateway closed.'));
+      this.endHandshake();
+      this.endStable();
+      this.rejectAll(new RpcError(RPC_LOST, 'The connection to the gateway closed.'));
       this.setStatus('closed');
       if (close.code === CLOSE_UNAUTHORIZED || close.code === CLOSE_FORBIDDEN) {
         this.wantOpen = false;
@@ -159,6 +227,32 @@ export class RpcClient {
     };
   }
 
+  // Sends a light request. A socket that never answers is dropped, so the normal reconnect takes
+  // over. Only a reply from the server proves the link works.
+  private async probe(): Promise<void> {
+    const socket = this.socket;
+    if (this.status !== 'open' || !socket) return;
+    try {
+      await this.call(PROBE_METHOD, {}, PROBE_TIMEOUT_MS);
+    } catch (caught) {
+      if (caught instanceof RpcError && caught.code !== RPC_LOST && caught.code !== RPC_NOT_CONNECTED) return;
+      if (this.socket === socket) this.dropSocket();
+    }
+  }
+
+  // Gives up on a socket that stopped answering. Its close may never arrive, so this does not wait for it.
+  private dropSocket(): void {
+    const socket = this.socket;
+    if (!socket) return;
+    this.socket = null;
+    this.endHandshake();
+    this.endStable();
+    socket.close(1000, 'no answer');
+    this.rejectAll(new RpcError(RPC_LOST, 'The connection to the gateway closed.'));
+    this.setStatus('closed');
+    if (this.wantOpen) this.scheduleReconnect();
+  }
+
   private scheduleReconnect(): void {
     const delay = Math.min(MAX_BACKOFF_MS, 1000 * 2 ** this.attempts) + Math.random() * 250;
     this.attempts += 1;
@@ -166,6 +260,25 @@ export class RpcClient {
       this.retryTimer = null;
       void this.open();
     }, delay);
+  }
+
+  private endHandshake(): void {
+    if (this.handshakeTimer) clearTimeout(this.handshakeTimer);
+    this.handshakeTimer = null;
+  }
+
+  private endStable(): void {
+    if (this.stableTimer) clearTimeout(this.stableTimer);
+    this.stableTimer = null;
+  }
+
+  private clearTimers(): void {
+    if (this.retryTimer) clearTimeout(this.retryTimer);
+    this.retryTimer = null;
+    this.endHandshake();
+    this.endStable();
+    if (this.heartbeat) clearInterval(this.heartbeat);
+    this.heartbeat = null;
   }
 
   // A frame can carry one JSON object per line. Each line is handled on its own.

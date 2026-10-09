@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "dependencies": {
     "expo": "~57.0.27",
+    "expo-clipboard": "~57.0.2",
     "expo-constants": "~57.0.21",
     "expo-document-picker": "~57.0.3",
     "expo-font": "~57.0.4",
@@ -31,7 +32,8 @@
     "eslint": "^9.0.0",
     "eslint-config-expo": "~57.0.2",
     "openapi-typescript": "^7.13.0",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "vitest": "^3.2.7"
   },
   "scripts": {
     "start": "expo start",
@@ -40,7 +42,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "gen:api": "openapi-typescript api/openapi.json -o lib/gateway/schema.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "private": true
 }

@@ -3,6 +3,7 @@ import { Alert, Text, View } from 'react-native';
 import { router } from 'expo-router';
 
 import { useGateway } from '@/lib/gateway';
+import { isPlainHttpRisky } from '@/lib/gateway/http';
 import { useAction } from '@/lib/gateway/hooks';
 import { tokens } from '@/constants/tokens';
 import { Button, Card, Field, InlineNotice, Row, Screen, Section } from '@/components/ui';
@@ -14,6 +15,7 @@ export default function ConnectScreen() {
   const [address, setAddress] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPlain, setConfirmPlain] = useState(false);
 
   const add = useAction(gateway.addGateway);
   const signIn = useAction(gateway.signIn);
@@ -25,6 +27,7 @@ export default function ConnectScreen() {
 
   const passwordProvider = gateway.authProviders.find((p) => p.supports_password);
   const needsSignIn = gateway.phase === 'signed_out';
+  const plainHttp = gateway.activeProfile ? isPlainHttpRisky(gateway.activeProfile.baseUrl) : false;
   const busy = gateway.phase === 'connecting' || add.pending || signIn.pending;
 
   const onAdd = async () => {
@@ -41,8 +44,15 @@ export default function ConnectScreen() {
       Alert.alert('Sign in', 'Enter your username and password.');
       return;
     }
+    // A password over plain http can be read by other devices on the network, so the user confirms
+    // first. The confirmation is part of the form, because native alerts do nothing on web.
+    if (plainHttp && !confirmPlain) {
+      setConfirmPlain(true);
+      return;
+    }
     await signIn.run(passwordProvider.name, username.trim(), password);
     setPassword('');
+    setConfirmPlain(false);
   };
 
   return (
@@ -84,7 +94,26 @@ export default function ConnectScreen() {
                 textContentType="password"
               />
               {signIn.error ? <InlineNotice tone="danger">{signIn.error}</InlineNotice> : null}
-              <Button label="Sign in" onPress={onSignIn} loading={signIn.pending} disabled={busy} />
+              {plainHttp ? (
+                <InlineNotice tone="warning">
+                  This address is not encrypted. Anything typed here can be read on the network. Use Tailscale or an https address.
+                </InlineNotice>
+              ) : null}
+              {confirmPlain ? (
+                <>
+                  <InlineNotice tone="danger">Other devices on the network could read this password. Send it anyway?</InlineNotice>
+                  <View style={{ flexDirection: 'row', gap: 10 }}>
+                    <View style={{ flex: 1 }}>
+                      <Button label="Cancel" variant="secondary" onPress={() => setConfirmPlain(false)} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Button label="Send anyway" onPress={onSignIn} loading={signIn.pending} disabled={busy} />
+                    </View>
+                  </View>
+                </>
+              ) : (
+                <Button label="Sign in" onPress={onSignIn} loading={signIn.pending} disabled={busy} />
+              )}
             </>
           ) : (
             <InlineNotice tone="warning">

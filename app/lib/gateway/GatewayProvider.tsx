@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { AppState } from 'react-native';
 
 import {
   createGatewayHttp,
@@ -34,7 +35,7 @@ type GatewayContextValue = {
   removeGateway: (id: string) => Promise<void>;
   connect: () => Promise<void>;
   signIn: (provider: string, username: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
+  signOut: (force?: boolean) => Promise<void>;
 };
 
 const GatewayContext = createContext<GatewayContextValue | null>(null);
@@ -168,7 +169,10 @@ export function GatewayProvider({ children }: { children: ReactNode }) {
         const socket = new RpcClient({
           getUrl: async () => {
             if (info.auth_required) {
-              const ticket = unwrap(await client.POST('/api/auth/ws-ticket')) as unknown as { ticket: string };
+              // Bounded like the other requests, so a hung ticket request cannot stall every reconnect.
+              const ticket = unwrap(
+                await withDeadline((signal) => client.POST('/api/auth/ws-ticket', { signal })),
+              ) as unknown as { ticket: string };
               return toWebSocketUrl(profile.baseUrl, '/api/ws', { ticket: ticket.ticket });
             }
             return toWebSocketUrl(profile.baseUrl, '/api/ws', { token: token ?? '' });
@@ -231,6 +235,17 @@ export function GatewayProvider({ children }: { children: ReactNode }) {
     };
   }, [connectTo]);
 
+  // The socket reconnects at once when the app comes back, and is checked while the app is on screen.
+  useEffect(() => {
+    if (!rpc) return;
+    rpc.setForeground(AppState.currentState === 'active');
+    const subscription = AppState.addEventListener('change', (state) => rpc.setForeground(state === 'active'));
+    return () => {
+      subscription.remove();
+      rpc.setForeground(false);
+    };
+  }, [rpc]);
+
   const persist = useCallback(async (nextProfiles: GatewayProfile[], nextActive: string | null) => {
     setProfiles(nextProfiles);
     setActiveId(nextActive);
@@ -256,7 +271,15 @@ export function GatewayProvider({ children }: { children: ReactNode }) {
     async (id: string) => {
       const profile = profiles.find((p) => p.id === id);
       if (!profile) return;
-      await persist(profiles, id);
+      // Leave the sign-in form at once. Until connectTo runs, it would post through the old gateway.
+      setPhase('connecting');
+      try {
+        await persist(profiles, id);
+      } catch (caught) {
+        setPhase('error');
+        setError(caught instanceof Error ? caught.message : 'Could not save the gateway choice.');
+        return;
+      }
       await connectTo(profile);
     },
     [profiles, persist, connectTo],
@@ -299,14 +322,25 @@ export function GatewayProvider({ children }: { children: ReactNode }) {
     [http, activeProfile, connectTo],
   );
 
-  const signOut = useCallback(async () => {
-    try {
-      if (http) await http.POST('/auth/logout');
-    } finally {
+  // Signs out only once the gateway has ended the session. If that fails, the user stays
+  // signed in, so the next launch does not sign straight back in. force signs out on this
+  // phone anyway, which leaves the gateway session alive.
+  const signOut = useCallback(
+    async (force = false) => {
+      if (http) {
+        try {
+          unwrap(await http.POST('/auth/logout'));
+        } catch (caught) {
+          // A session the gateway has already ended counts as signed out.
+          const ended = caught instanceof GatewayHttpError && caught.status === 401;
+          if (!ended && !force) throw caught;
+        }
+      }
       stopRpc();
       setPhase('signed_out');
-    }
-  }, [http, stopRpc]);
+    },
+    [http, stopRpc],
+  );
 
   const value = useMemo<GatewayContextValue>(
     () => ({

@@ -41,6 +41,23 @@ export function normalizeBaseUrl(input: string): string {
   return url.origin + url.pathname.replace(/\/+$/, '');
 }
 
+// Plain http is only private on this phone (localhost), on a Tailscale address (WireGuard
+// encrypts it) or on an address in the 127/8 range. Anywhere else, other devices on the
+// network can read what is sent, passwords included.
+export function isPlainHttpRisky(baseUrl: string): boolean {
+  const url = new URL(baseUrl);
+  if (url.protocol !== 'http:') return false;
+  const host = url.hostname.toLowerCase();
+  if (host === 'localhost' || host === '[::1]' || host.endsWith('.ts.net')) return false;
+  if (host.startsWith('[fd7a:115c:a1e0:')) return false; // Tailscale's IPv6 range
+  // Only a real dotted IPv4 address can be in a private range. Names such as 127.corp.example.com are not.
+  const ipv4 = /^(\d{1,3})\.(\d{1,3})\.\d{1,3}\.\d{1,3}$/.exec(host);
+  if (!ipv4) return true;
+  const first = Number(ipv4[1]);
+  const second = Number(ipv4[2]);
+  return !(first === 127 || (first === 100 && second >= 64 && second <= 127));
+}
+
 // The dashboard's WebSocket lives on the same origin, with wss:// for https.
 export function toWebSocketUrl(baseUrl: string, path: string, query: Record<string, string>): string {
   const url = new URL(baseUrl + path);

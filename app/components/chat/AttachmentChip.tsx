@@ -1,11 +1,13 @@
 import { SymbolView } from 'expo-symbols';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { tokens } from '@/constants/tokens';
 
 type Props = {
   name: string;
   kind: 'image' | 'file';
+  // This device's copy of a photo. Shown as a thumbnail when present.
+  previewUri?: string;
   status?: 'uploading' | 'ready' | 'failed';
   error?: string;
   onRemove?: () => void;
@@ -17,11 +19,15 @@ const ICON = {
 } as const;
 
 // A photo or file, shown above the composer or inside a sent message.
-export function AttachmentChip({ name, kind, status = 'ready', error, onRemove }: Props) {
+export function AttachmentChip({ name, kind, previewUri, status = 'ready', error, onRemove }: Props) {
   const failed = status === 'failed';
   return (
     <View style={[styles.chip, failed && styles.chipFailed]}>
-      <SymbolView name={ICON[kind]} tintColor={failed ? tokens.danger : tokens.textMuted} size={16} />
+      {previewUri && !failed ? (
+        <Image source={{ uri: previewUri }} style={styles.thumb} accessibilityIgnoresInvertColors />
+      ) : (
+        <SymbolView name={ICON[kind]} tintColor={failed ? tokens.danger : tokens.textMuted} size={16} />
+      )}
       <View style={styles.text}>
         <Text numberOfLines={1} style={styles.name}>
           {name}
@@ -54,6 +60,12 @@ const styles = StyleSheet.create({
   },
   chipFailed: {
     borderColor: tokens.danger,
+  },
+  thumb: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    backgroundColor: tokens.bg,
   },
   text: {
     flexShrink: 1,

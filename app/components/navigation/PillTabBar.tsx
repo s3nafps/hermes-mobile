@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FloatingTabs } from '@/components/navigation/FloatingTabs';
 import { TabItems } from '@/components/navigation/TabItems';
 import { tokens } from '@/constants/tokens';
+import { themed } from '@/lib/theme';
 
 export type PillTabBarProps = BottomTabBarProps & {
   // Height of the keyboard, or 0 while it is hidden.
@@ -36,7 +37,7 @@ export function PillTabBar({ keyboardHeight, lift, state, descriptors, navigatio
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   wrap: {
     backgroundColor: tokens.bg,
     paddingHorizontal: 14,
@@ -56,4 +57,4 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     elevation: 8,
   },
-});
+}));

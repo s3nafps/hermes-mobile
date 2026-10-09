@@ -7,6 +7,7 @@ import { Badge, Button, Card, InlineNotice } from '@/components/ui';
 import { MONO, tokens } from '@/constants/tokens';
 import { useGateway, useGatewayQuery } from '@/lib/gateway';
 import { messageOf } from '@/lib/gateway/hooks';
+import { themed } from '@/lib/theme';
 
 const LINES_TO_SHOW = 400;
 const POLL_WHILE_RUNNING_MS = 2000;
@@ -158,7 +159,7 @@ function StatusBadge({ report, counts }: { report: AuditStatus | undefined; coun
   return <Badge label={`Exit ${report.exit_code}`} tone="danger" />;
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   heading: {
     color: tokens.text,
     fontSize: 17,
@@ -181,4 +182,4 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 17,
   },
-});
+}));

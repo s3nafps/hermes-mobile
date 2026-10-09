@@ -8,6 +8,7 @@ import { useAction, useGateway, useGatewayQuery } from '@/lib/gateway';
 
 import { getSkillContent, saveSkillContent } from './api';
 import type { InstalledSkill } from './types';
+import { themed } from '@/lib/theme';
 
 const MONO = Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' });
 
@@ -97,7 +98,7 @@ export function SkillSheet({ skill, onClose, onSaved }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   code: { color: tokens.text, fontFamily: MONO, fontSize: 13, lineHeight: 19 },
   editor: { minHeight: 260, fontFamily: MONO, fontSize: 13 },
-});
+}));

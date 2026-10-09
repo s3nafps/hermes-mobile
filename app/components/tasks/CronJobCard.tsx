@@ -5,6 +5,7 @@ import { tokens } from '@/constants/tokens';
 
 import { formatWhen, labelFor, toneFor } from './format';
 import type { CronJob } from './types';
+import { themed } from '@/lib/theme';
 
 type Props = {
   job: CronJob;
@@ -62,7 +63,7 @@ export function CronJobCard({ job, deliverLabel, busy, onOpen, onToggle, onRunNo
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   card: { gap: 10 },
   body: { gap: 4 },
   header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 },
@@ -71,4 +72,4 @@ const styles = StyleSheet.create({
   error: { color: tokens.danger, fontSize: 13, lineHeight: 18, marginTop: 2 },
   footer: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 },
   spacer: { flexGrow: 1 },
-});
+}));

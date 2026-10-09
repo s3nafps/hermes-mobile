@@ -12,6 +12,7 @@ import { kanbanNewHref, kanbanTaskHref } from './routes';
 import { TaskCard } from './TaskCard';
 import type { KanbanTask } from './types';
 import { useRefetchOnFocus } from './useRefetchOnFocus';
+import { themed } from '@/lib/theme';
 
 // The Board tab: one section per status column, filtered on the device.
 // Switching boards only changes which board this screen reads. It does not
@@ -131,7 +132,7 @@ export function BoardTab() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   wrap: { gap: 16 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   group: { gap: 8 },
@@ -139,4 +140,4 @@ const styles = StyleSheet.create({
   columnHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   columnTitle: { color: tokens.text, fontSize: 16, fontWeight: '600' },
   empty: { color: tokens.textMuted, fontSize: 13, paddingVertical: 4 },
-});
+}));

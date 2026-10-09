@@ -17,6 +17,7 @@ import { ChangedFileRow } from './ChangedFileRow';
 import { DiffView } from './DiffView';
 import { GitLayoutSections } from './GitLayoutSections';
 import type { GitLayout, RepoStatus, ReviewList, ReviewScope } from './types';
+import { themed } from '@/lib/theme';
 
 export type ListResult = ReviewList & { scope: ReviewScope };
 export type DiffResult = { file: string; text: string };
@@ -109,7 +110,7 @@ function EmptyChanges({ scope, base }: { scope: ReviewScope; base: string | null
   return <EmptyState title="No changes on this branch" body={`Nothing differs from ${base}.`} />;
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   diffHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   diffPath: { flex: 1, color: tokens.text, fontFamily: MONO, fontSize: 13 },
-});
+}));

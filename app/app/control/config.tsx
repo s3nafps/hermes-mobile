@@ -29,6 +29,7 @@ import {
 } from '@/components/ui';
 import { tokens } from '@/constants/tokens';
 import { unwrap, useAction, useGateway, useGatewayQuery } from '@/lib/gateway';
+import { themed } from '@/lib/theme';
 
 const MONO = Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' });
 
@@ -245,7 +246,7 @@ export default function ConfigScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   path: { color: tokens.textMuted, fontSize: 12 },
   raw: { color: tokens.text, fontFamily: MONO, fontSize: 12, lineHeight: 17 },
-});
+}));

@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { TabItems, type TabItemsProps } from '@/components/navigation/TabItems';
 import { tokens } from '@/constants/tokens';
+import { themed } from '@/lib/theme';
 
 type Props = TabItemsProps & {
   // Distance from the screen bottom to the top of the keyboard. The button sits right above it.
@@ -46,7 +47,7 @@ export function FloatingTabs({ keyboardHeight, lift, state, descriptors, navigat
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   button: {
     position: 'absolute',
     right: 16,
@@ -79,4 +80,4 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     elevation: 8,
   },
-});
+}));

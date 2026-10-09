@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 import { Stack } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Platform, StyleSheet, Text } from 'react-native';
+import { Alert, Platform, StyleSheet, Text, View } from 'react-native';
 
 import { confirmAction } from '@/components/control/confirm';
 import { untyped } from '@/components/control/client';
@@ -17,11 +17,13 @@ import {
   Screen,
   ScreenTitle,
   Section,
+  Segmented,
   Sheet,
 } from '@/components/ui';
 import { tokens } from '@/constants/tokens';
 import { unwrap, useAction, useGateway, useGatewayQuery } from '@/lib/gateway';
 import { messageOf } from '@/lib/gateway/hooks';
+import { themed, useTheme } from '@/lib/theme';
 
 const MONO = Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' });
 const MAX_OUTPUT = 4000;
@@ -29,6 +31,7 @@ const MAX_OUTPUT = 4000;
 // App-level settings: the gateway in use, the dashboard theme, updates, maintenance and sign out.
 export default function SettingsScreen() {
   const { http, activeProfile, status, signOut } = useGateway();
+  const { pref, setPref } = useTheme();
   const [themePicking, setThemePicking] = useState(false);
   const [checks, setChecks] = useState(0);
   const [doctorText, setDoctorText] = useState<string | null>(null);
@@ -127,6 +130,20 @@ export default function SettingsScreen() {
         <Row title="App version" value={Constants.expoConfig?.version ?? '—'} last />
       </Section>
 
+      <Section label="Appearance">
+        <View style={{ padding: 12 }}>
+          <Segmented
+            options={[
+              { value: 'system', label: 'System' },
+              { value: 'light', label: 'Light' },
+              { value: 'dark', label: 'Dark' },
+            ]}
+            value={pref}
+            onChange={setPref}
+          />
+        </View>
+      </Section>
+
       <Section label="Gateway">
         <Row title="Connected to" subtitle={activeProfile?.baseUrl} value={activeProfile?.name} />
         <Row title="Hermes version" value={status?.version} />
@@ -202,6 +219,6 @@ export default function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   output: { color: tokens.text, fontFamily: MONO, fontSize: 12, lineHeight: 17 },
-});
+}));

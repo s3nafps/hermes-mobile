@@ -35,6 +35,7 @@ import {
   Sheet,
 } from '@/components/ui';
 import { useAction, useGateway, useGatewayQuery } from '@/lib/gateway';
+import { themed } from '@/lib/theme';
 
 // One bot. Reads come from the profile list, since the gateway has no single-profile read.
 // Each save updates the local copy, then refetches so the list stays in step.
@@ -315,9 +316,9 @@ export default function BotScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   group: { gap: 8 },
   card: { gap: 12 },
   persona: { minHeight: 180 },
   dangerRow: { padding: 14, gap: 10 },
-});
+}));

@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import { tokens } from '@/constants/tokens';
+import { themed } from '@/lib/theme';
 
 type Props = {
   title: string;
@@ -23,7 +24,7 @@ export function PlaceholderScreen({ title, screens }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: tokens.bg,
@@ -49,4 +50,4 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
   },
-});
+}));

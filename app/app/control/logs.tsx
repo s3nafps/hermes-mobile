@@ -18,6 +18,7 @@ import {
 } from '@/components/ui';
 import { tokens } from '@/constants/tokens';
 import { useGateway, useGatewayQuery } from '@/lib/gateway';
+import { themed } from '@/lib/theme';
 
 type LogFile = 'agent' | 'errors' | 'gateway';
 type Level = 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR';
@@ -107,7 +108,7 @@ export default function LogsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   liveRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   liveLabel: { color: tokens.textMuted, fontSize: 13 },
   logCard: { padding: 0, overflow: 'hidden' },
@@ -119,4 +120,4 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     padding: 12,
   },
-});
+}));

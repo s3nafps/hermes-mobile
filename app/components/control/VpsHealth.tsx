@@ -5,6 +5,7 @@ import { tokens } from '@/constants/tokens';
 
 import { byteSize, percent } from './format';
 import type { SystemStats } from './types';
+import { themed } from '@/lib/theme';
 
 type Props = {
   stats: SystemStats | null | undefined;
@@ -77,7 +78,7 @@ function formatUptime(totalSeconds: number): string {
   return `${minutes}m`;
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   heading: {
     color: tokens.text,
     fontSize: 17,
@@ -103,4 +104,4 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 4,
   },
-});
+}));

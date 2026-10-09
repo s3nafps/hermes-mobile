@@ -4,6 +4,7 @@ import { Card } from '@/components/ui';
 import { tokens } from '@/constants/tokens';
 
 import type { KanbanTask } from './types';
+import { themed } from '@/lib/theme';
 
 type Props = {
   task: KanbanTask;
@@ -36,9 +37,9 @@ export function TaskCard({ task, onPress }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   card: { gap: 6 },
   title: { color: tokens.text, fontSize: 15, fontWeight: '600' },
   meta: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   metaText: { color: tokens.textMuted, fontSize: 13 },
-});
+}));

@@ -19,6 +19,7 @@ import {
 } from '@/components/ui';
 import { tokens } from '@/constants/tokens';
 import { useGateway, useGatewayQuery } from '@/lib/gateway';
+import { themed } from '@/lib/theme';
 
 type Range = '7' | '30' | '90';
 
@@ -114,8 +115,8 @@ export default function AnalyticsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   caption: { color: tokens.textMuted, fontSize: 13, marginTop: -8 },
   note: { color: tokens.textMuted, fontSize: 12, lineHeight: 18 },
-});
+}));

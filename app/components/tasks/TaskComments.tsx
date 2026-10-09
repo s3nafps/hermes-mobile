@@ -8,6 +8,7 @@ import { useAction, useHttp } from '@/lib/gateway';
 import { addComment } from './api';
 import { formatWhen } from './format';
 import type { KanbanComment } from './types';
+import { themed } from '@/lib/theme';
 
 type Props = {
   board: string | null;
@@ -66,10 +67,10 @@ export function TaskComments({ board, taskId, comments, onChanged }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   wrap: { gap: 10 },
   empty: { color: tokens.textMuted, fontSize: 14 },
   comment: { gap: 4 },
   meta: { color: tokens.textMuted, fontSize: 12 },
   body: { color: tokens.text, fontSize: 14, lineHeight: 20 },
-});
+}));

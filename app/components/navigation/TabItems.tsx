@@ -2,6 +2,7 @@ import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { tokens } from '@/constants/tokens';
+import { themed } from '@/lib/theme';
 
 export type TabItemsProps = Pick<BottomTabBarProps, 'state' | 'descriptors' | 'navigation'> & {
   // Runs after a tab is chosen, so a menu can close itself.
@@ -44,7 +45,7 @@ export function TabItems({ state, descriptors, navigation, onNavigate }: TabItem
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   item: {
     flex: 1,
     alignItems: 'center',
@@ -60,4 +61,4 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
   },
-});
+}));

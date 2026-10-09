@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import { tokens } from '@/constants/tokens';
+import { themed } from '@/lib/theme';
 
 type Props = {
   label: string;
@@ -19,7 +20,7 @@ export function StatTile({ label, value }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   tile: {
     width: '48%',
     backgroundColor: tokens.surface,
@@ -31,4 +32,4 @@ const styles = StyleSheet.create({
   },
   label: { color: tokens.textMuted, fontSize: 12 },
   value: { color: tokens.text, fontSize: 22, fontWeight: '600' },
-});
+}));

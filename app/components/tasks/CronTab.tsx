@@ -12,6 +12,7 @@ import { deleteCronJob, listCronJobs, listDeliveryTargets, setCronJobEnabled, tr
 import { cronJobHref, cronNewHref } from './routes';
 import { useRefetchOnFocus } from './useRefetchOnFocus';
 import type { CronJob } from './types';
+import { themed } from '@/lib/theme';
 
 type Notice = { tone: 'info' | 'danger'; text: string };
 
@@ -91,8 +92,8 @@ export function CronTab() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   list: { gap: 12 },
   actions: { flexDirection: 'row' },
   hint: { color: tokens.textMuted, fontSize: 12 },
-});
+}));

@@ -22,6 +22,7 @@ import {
 } from '@/components/ui';
 import { tokens } from '@/constants/tokens';
 import { unwrap, useAction, useGateway, useGatewayQuery } from '@/lib/gateway';
+import { themed } from '@/lib/theme';
 
 const APPROVAL_MODES = [
   { value: 'manual', label: 'Manual', hint: 'Ask before running any dangerous command.' },
@@ -219,6 +220,6 @@ function stringOrNull(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value : null;
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   note: { color: tokens.textMuted, fontSize: 12, lineHeight: 18 },
-});
+}));

@@ -8,6 +8,7 @@ import { useAction, useGateway, useGatewayQuery } from '@/lib/gateway';
 
 import { loadProviderSettings, saveProviderSettings } from './api';
 import type { ProviderSetting } from './types';
+import { themed } from '@/lib/theme';
 
 type Props = {
   visible: boolean;
@@ -115,9 +116,9 @@ function SettingsForm({ provider, settings, onSaved }: FormProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   form: { gap: 12 },
   card: { gap: 14 },
   toggleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   toggleLabel: { color: tokens.text, fontSize: 15, flex: 1 },
-});
+}));

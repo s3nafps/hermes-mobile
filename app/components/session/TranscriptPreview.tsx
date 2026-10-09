@@ -4,6 +4,7 @@ import { tokens } from '@/constants/tokens';
 import { EmptyState, ErrorState, LoadingState, Section } from '@/components/ui';
 
 import type { TranscriptLine } from './types';
+import { themed } from '@/lib/theme';
 
 type Props = {
   lines: TranscriptLine[] | undefined;
@@ -45,10 +46,10 @@ export function TranscriptPreview({ lines, loading, error, onRetry, pageSize }: 
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   line: { paddingHorizontal: 14, paddingVertical: 10, gap: 4 },
   lineDivider: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: tokens.line },
   speaker: { color: tokens.textMuted, fontSize: 12, fontWeight: '600' },
   text: { color: tokens.text, fontSize: 14, lineHeight: 20 },
   more: { color: tokens.textMuted, fontSize: 13 },
-});
+}));

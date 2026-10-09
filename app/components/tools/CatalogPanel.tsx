@@ -7,6 +7,7 @@ import { useAction, useGateway, useGatewayQuery } from '@/lib/gateway';
 
 import { installCatalogEntry, listCatalog } from './api';
 import type { CatalogEntry } from './types';
+import { themed } from '@/lib/theme';
 
 // The approved MCP catalog. Install asks for any keys the server needs, then adds it to the config.
 export function CatalogPanel({ onInstalled }: { onInstalled: () => void }) {
@@ -98,6 +99,6 @@ function InstallForm({ entry, onDone }: { entry: CatalogEntry; onDone: () => voi
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   form: { gap: 12 },
-});
+}));

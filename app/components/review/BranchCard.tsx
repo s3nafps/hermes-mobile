@@ -5,6 +5,7 @@ import { MONO, tokens } from '@/constants/tokens';
 
 import { pluralize } from './format';
 import type { RepoStatus } from './types';
+import { themed } from '@/lib/theme';
 
 // The branch the working folder is on, with its ahead/behind state and working tree counts.
 export function BranchCard({ repo, cwd }: { repo: RepoStatus; cwd: string }) {
@@ -35,10 +36,10 @@ export function BranchCard({ repo, cwd }: { repo: RepoStatus; cwd: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   label: { color: tokens.textMuted, fontSize: 12, fontWeight: '600', letterSpacing: 0.6 },
   branch: { color: tokens.text, fontFamily: MONO, fontSize: 18, fontWeight: '600' },
   badges: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   meta: { color: tokens.textMuted, fontSize: 13 },
   folder: { color: tokens.textMuted, fontFamily: MONO, fontSize: 12 },
-});
+}));

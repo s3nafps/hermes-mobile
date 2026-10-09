@@ -5,6 +5,7 @@ import { tokens } from '@/constants/tokens';
 import { useAction, useGateway, unwrap, type GatewayStatus } from '@/lib/gateway';
 
 import { NOT_CONNECTED } from './client';
+import { themed } from '@/lib/theme';
 
 type Props = {
   status: GatewayStatus | null;
@@ -115,7 +116,7 @@ function Fact({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   headline: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   headlineText: { color: tokens.text, fontSize: 17, fontWeight: '600', flex: 1 },
   facts: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
@@ -124,4 +125,4 @@ const styles = StyleSheet.create({
   factValue: { color: tokens.text, fontSize: 14 },
   actions: { flexDirection: 'row', gap: 10 },
   action: { flex: 1 },
-});
+}));

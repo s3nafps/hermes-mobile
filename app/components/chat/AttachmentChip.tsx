@@ -2,6 +2,7 @@ import { SymbolView } from 'expo-symbols';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { tokens } from '@/constants/tokens';
+import { themed } from '@/lib/theme';
 
 type Props = {
   name: string;
@@ -44,7 +45,7 @@ export function AttachmentChip({ name, kind, previewUri, status = 'ready', error
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -85,4 +86,4 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     paddingHorizontal: 4,
   },
-});
+}));

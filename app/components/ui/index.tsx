@@ -16,6 +16,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { tokens } from '@/constants/tokens';
+import { themed } from '@/lib/theme';
 
 // Shared building blocks for every screen. Keeping them in one place keeps the
 // feature screens consistent with the approved design.
@@ -358,7 +359,7 @@ export function Sheet({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   fill: { flex: 1, backgroundColor: tokens.bg },
   body: { paddingHorizontal: 20, gap: 20 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
@@ -453,4 +454,4 @@ const styles = StyleSheet.create({
   },
   grabber: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: '#3A4150', marginBottom: 12 },
   sheetTitle: { color: tokens.text, fontSize: 18, fontWeight: '600', marginBottom: 12 },
-});
+}));

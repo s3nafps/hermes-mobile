@@ -2,6 +2,7 @@ import { Linking, ScrollView, StyleSheet, Text, View, type TextStyle } from 'rea
 
 import { MONO, tokens } from '@/constants/tokens';
 import { parseBlocks, parseInline, type Block, type Inline } from '@/lib/chat/markdown';
+import { themed } from '@/lib/theme';
 
 // Renders an assistant reply: headings, lists, quotes, code blocks and inline emphasis.
 export function Markdown({ source }: { source: string }) {
@@ -89,7 +90,7 @@ async function openLink(url: string): Promise<void> {
   await Linking.openURL(url).catch(() => undefined);
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   body: {
     color: tokens.text,
     fontSize: 15,
@@ -132,4 +133,4 @@ const styles = StyleSheet.create({
     borderLeftWidth: 3,
     borderLeftColor: tokens.accent,
   },
-});
+}));

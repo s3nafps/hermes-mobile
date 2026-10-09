@@ -7,6 +7,7 @@ import { useAction, useHttp } from '@/lib/gateway';
 import { addLink, removeLink } from './api';
 import { confirmFirst } from './format';
 import type { KanbanRef, KanbanTaskDetail } from './types';
+import { themed } from '@/lib/theme';
 
 type Props = {
   board: string | null;
@@ -127,7 +128,7 @@ export function TaskLinks({ board, detail, onChanged }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   wrap: { gap: 12 },
   form: { gap: 10 },
-});
+}));

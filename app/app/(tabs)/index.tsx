@@ -68,7 +68,7 @@ export default function ChatTab() {
           <ErrorState message={error} onRetry={retry} />
         </View>
       ) : liveId ? (
-        <ChatView liveId={liveId} keyboardOffset={0} />
+        <ChatView key={liveId} liveId={liveId} keyboardOffset={0} />
       ) : (
         <LoadingState label="Opening your chat…" />
       )}

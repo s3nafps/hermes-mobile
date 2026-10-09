@@ -10,7 +10,8 @@ export type ChatApi = {
   state: ChatState;
   createSession: () => Promise<string>;
   attach: (storedKey: string) => Promise<string>;
-  submit: (liveId: string, text: string, attachments?: SentAttachment[]) => Promise<void>;
+  // Resolves true when the gateway took the message, false when it was rejected.
+  submit: (liveId: string, text: string, attachments?: SentAttachment[]) => Promise<boolean>;
   interrupt: (liveId: string) => Promise<void>;
   answerApproval: (prompt: PendingPrompt, choice: ApprovalChoice) => Promise<'answered' | 'expired'>;
   answerClarify: (prompt: PendingPrompt, answer: string) => Promise<void>;
@@ -118,10 +119,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   );
 
   const submit = useCallback(
-    async (liveId: string, text: string, attachments: SentAttachment[] = []) => {
+    async (liveId: string, text: string, attachments: SentAttachment[] = []): Promise<boolean> => {
       const client = requireConnected(rpc);
       const trimmed = text.trim();
-      if (!trimmed && attachments.length === 0) return;
+      if (!trimmed && attachments.length === 0) return false;
       // The agent needs some words to act on, so files sent alone get a short request.
       const body = trimmed || 'Please look at the attached files.';
       const refs = attachments.flatMap((attachment) => (attachment.refText ? [attachment.refText] : []));
@@ -132,10 +133,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           session_id: liveId,
           text: [body, ...refs].join('\n'),
         });
-        if (result.status === 'queued') dispatch({ type: 'queued', liveId, text: trimmed });
+        if (result.status === 'queued') dispatch({ type: 'queued', liveId, text: body });
+        return true;
       } catch (caught) {
         const message = caught instanceof Error ? caught.message : 'The message could not be sent.';
         dispatch({ type: 'user_failed', liveId, id: localId, message });
+        return false;
       }
     },
     [rpc, nextLocalId],

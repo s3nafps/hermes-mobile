@@ -31,6 +31,27 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
   const [pending, setPending] = useState<PendingAttachment[]>([]);
   const listRef = useRef<FlatList<ChatItem>>(null);
 
+  // Uploads that finish after their chip was removed, or after this chat was left, are
+  // detached when they arrive, so no photo stays queued on the session by accident.
+  const alive = useRef(true);
+  const dropped = useRef(new Set<string>());
+  const pendingRef = useRef<PendingAttachment[]>([]);
+  const rpcRef = useRef(rpc);
+  useEffect(() => {
+    pendingRef.current = pending;
+  }, [pending]);
+  useEffect(() => {
+    rpcRef.current = rpc;
+  }, [rpc]);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+      const client = rpcRef.current;
+      if (client) for (const item of pendingRef.current) void detachAttachment(client, liveId, item);
+    };
+  }, [liveId]);
+
   useEffect(() => {
     listRef.current?.scrollToEnd({ animated: true });
   }, [session?.items.length, session?.streaming]);
@@ -70,6 +91,11 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
     setPending((list) => [...list, { key, name: picked.name, kind: picked.kind, status: 'uploading' }]);
     try {
       const uploaded = await uploadAttachment(rpc, liveId, picked);
+      if (dropped.current.delete(key) || !alive.current) {
+        // Removed or left while uploading: take the image back off the session.
+        void detachAttachment(rpc, liveId, { key, name: picked.name, kind: picked.kind, status: 'ready', ...uploaded });
+        return;
+      }
       setPending((list) => list.map((item) => (item.key === key ? { ...item, status: 'ready', ...uploaded } : item)));
     } catch (caught) {
       setPending((list) =>
@@ -80,7 +106,12 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
 
   const removeAttachment = (item: PendingAttachment) => {
     setPending((list) => list.filter((entry) => entry.key !== item.key));
-    if (rpc) void detachAttachment(rpc, liveId, item);
+    if (item.status === 'uploading') {
+      // The upload is still running, so its result is detached when it arrives.
+      dropped.current.add(item.key);
+    } else if (rpc) {
+      void detachAttachment(rpc, liveId, item);
+    }
   };
 
   const send = async () => {
@@ -92,7 +123,12 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
     setDraft('');
     setPending([]);
     try {
-      await chat.submit(liveId, text, attachments);
+      // A rejected send keeps its "Not sent" bubble and gives the draft and files back.
+      const sent = await chat.submit(liveId, text, attachments);
+      if (!sent) {
+        setDraft(text);
+        setPending(ready);
+      }
     } catch (caught) {
       setError(messageOf(caught));
       setDraft(text);

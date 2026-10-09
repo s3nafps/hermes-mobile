@@ -56,7 +56,9 @@ export default function TabLayout() {
       <ConnectionBanner />
       <Tabs
         screenOptions={{ headerShown: false }}
-        tabBar={(props) => <PillTabBar {...props} keyboardHeight={keyboardHeight} lift={lift} />}>
+        tabBar={(props) => (
+          <PillTabBar {...props} keyboardHeight={keyboardHeight} lift={lift} side={index === 0 ? 'left' : 'right'} />
+        )}>
         <Tabs.Screen
           name="index"
           options={{

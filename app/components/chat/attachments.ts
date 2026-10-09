@@ -6,8 +6,13 @@ import { Platform } from 'react-native';
 import type { SentAttachment } from '@/lib/chat/types';
 import type { RpcClient } from '@/lib/gateway/rpc';
 
-// The gateway refuses images and files larger than this.
-export const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
+// Largest photo or file the app sends. The gateway receives each upload as one JSON frame
+// on the chat socket, and that frame is capped at 16 MiB. Base64 adds a third, so raw
+// files stay under 10 MB.
+export const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
+
+// Image types the gateway accepts for attach_bytes. Other images, such as HEIC, go as files.
+const GATEWAY_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/bmp']);
 
 export type PickedFile = {
   name: string;
@@ -57,7 +62,7 @@ export async function pickDocument(): Promise<PickedFile | null> {
   const mimeType = asset.mimeType ?? 'application/octet-stream';
   return {
     name: asset.name,
-    kind: mimeType.startsWith('image/') ? 'image' : 'file',
+    kind: GATEWAY_IMAGE_TYPES.has(mimeType) ? 'image' : 'file',
     mimeType,
     uri: asset.uri,
     size: asset.size ?? undefined,
@@ -100,7 +105,7 @@ export async function detachAttachment(rpc: RpcClient, sessionId: string, attach
 }
 
 function tooLarge(name: string): Error {
-  return new Error(`${name} is larger than 25 MB.`);
+  return new Error(`${name} is larger than ${MAX_ATTACHMENT_BYTES / (1024 * 1024)} MB.`);
 }
 
 // Reads a picked file as base64. On web the picker's uri is a browser blob URL, which

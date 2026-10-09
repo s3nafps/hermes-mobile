@@ -41,11 +41,27 @@ export type ThemesResponse = {
   active: string;
 };
 
-// GET /api/system/stats. Unverified. Field names follow the endpoint description
-// (memory and disk usage, reported as percentages).
+// GET /api/system/stats, as sent by the Hermes server (hermes_cli/web_server.py).
+// CPU, memory, disk, load and uptime come from psutil on the host, so any of them can be missing.
 export type SystemStats = {
-  memory?: { percent?: number | null } | null;
-  disk?: { percent?: number | null } | null;
+  hostname?: string;
+  platform?: string;
+  cpu_count?: number | null;
+  cpu_percent?: number | null;
+  load_avg?: number[];
+  uptime_seconds?: number;
+  memory?: { total?: number; used?: number; percent?: number | null } | null;
+  disk?: { total?: number; used?: number; percent?: number | null } | null;
+};
+
+// POST /api/ops/security-audit starts `hermes security audit` on the host. Its output is
+// read back from GET /api/actions/security-audit/status, which tails the audit log.
+export type AuditStatus = {
+  name: string;
+  running: boolean;
+  exit_code: number | null;
+  pid: number | null;
+  lines: string[];
 };
 
 // GET /api/analytics/usage. Unverified.

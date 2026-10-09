@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ChatView } from '@/components/chat/ChatView';
 import { tokens } from '@/constants/tokens';
@@ -13,6 +14,7 @@ import { Button, ErrorState, LoadingState } from '@/components/ui';
 export default function ChatTab() {
   const { rpc } = useGateway();
   const chat = useChat();
+  const insets = useSafeAreaInsets();
   const [liveId, setLiveId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,7 +54,7 @@ export default function ChatTab() {
 
   return (
     <View style={{ flex: 1, backgroundColor: tokens.bg }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: tokens.line }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingTop: insets.top + 8, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: tokens.line }}>
         <View style={{ flex: 1 }}>
           <Text numberOfLines={1} style={{ color: tokens.text, fontSize: 18, fontWeight: '600' }}>
             {title}
@@ -66,7 +68,7 @@ export default function ChatTab() {
           <ErrorState message={error} onRetry={retry} />
         </View>
       ) : liveId ? (
-        <ChatView liveId={liveId} />
+        <ChatView key={liveId} liveId={liveId} keyboardOffset={0} />
       ) : (
         <LoadingState label="Opening your chat…" />
       )}

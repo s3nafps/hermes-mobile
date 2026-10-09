@@ -3,8 +3,10 @@ import { router, type Href } from 'expo-router';
 import { ControlSections, type SectionSlug } from '@/components/control/ControlSections';
 import { untyped } from '@/components/control/client';
 import { PressureBanners } from '@/components/control/PressureBanners';
+import { SecurityReport } from '@/components/control/SecurityReport';
 import { StatusCard } from '@/components/control/StatusCard';
 import type { ConfigObject, SystemStats, ThemesResponse } from '@/components/control/types';
+import { VpsHealth } from '@/components/control/VpsHealth';
 import { Button, ErrorState, InlineNotice, LoadingState, Screen, ScreenTitle } from '@/components/ui';
 import { useGateway, useGatewayQuery, type GatewayStatus } from '@/lib/gateway';
 
@@ -94,7 +96,10 @@ export default function ControlScreen() {
 
       {current ? <StatusCard status={current} onChanged={status.refetch} /> : null}
 
+      <VpsHealth stats={stats.data} />
       <PressureBanners stats={stats.data} />
+
+      <SecurityReport />
 
       <ControlSections summaries={summaries} />
     </Screen>

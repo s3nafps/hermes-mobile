@@ -26,14 +26,20 @@ import {
 import { tokens } from '@/constants/tokens';
 import { useAction, useGateway, useGatewayQuery } from '@/lib/gateway';
 
+// The gateway's levels, in its order. A session can report any of them, so each one has a chip.
 const REASONING_OPTIONS: { value: ReasoningLevel; label: string }[] = [
+  { value: 'none', label: 'Off' },
+  { value: 'minimal', label: 'Minimal' },
   { value: 'low', label: 'Low' },
   { value: 'medium', label: 'Medium' },
   { value: 'high', label: 'High' },
+  { value: 'xhigh', label: 'Extra high' },
+  { value: 'max', label: 'Max' },
+  { value: 'ultra', label: 'Ultra' },
 ];
 
 function isReasoningLevel(value: unknown): value is ReasoningLevel {
-  return value === 'low' || value === 'medium' || value === 'high';
+  return REASONING_OPTIONS.some((option) => option.value === value);
 }
 
 type Props = {
@@ -169,6 +175,9 @@ export function ModelSheet({ visible, onClose, liveId, model, provider, running,
             />
           ))}
         </Section>
+      ) : null}
+      {activeProvider && activeProvider.authenticated && !activeProvider.models.length ? (
+        <InlineNotice tone="info">{`${activeProvider.name} lists no models on this gateway.`}</InlineNotice>
       ) : null}
 
       {apply.error ? <InlineNotice tone="danger">{apply.error}</InlineNotice> : null}

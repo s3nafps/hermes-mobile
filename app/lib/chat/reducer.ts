@@ -29,7 +29,8 @@ export type LiveSession = {
   provider: string;
   cwd: string;
   approvalMode: string;
-  reasoningEffort: string;
+  // null until the session reports it. '' means the model's default level, which the gateway reports as an empty string.
+  reasoningEffort: string | null;
   yolo: boolean;
   usage: Usage | null;
   running: boolean;
@@ -116,7 +117,7 @@ function blankSession(liveId: string): LiveSession {
     provider: '',
     cwd: '',
     approvalMode: 'manual',
-    reasoningEffort: '',
+    reasoningEffort: null,
     yolo: false,
     usage: null,
     running: false,

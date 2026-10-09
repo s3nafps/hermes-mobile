@@ -200,7 +200,11 @@ export function ModelSheet({ visible, onClose, liveId, model, provider, running,
       />
       {reasoning === null ? (
         <Text style={{ color: tokens.textMuted, fontSize: 13 }}>
-          The current level is not reported yet. Choose one to set it.
+          {reportedReasoning === null
+            ? 'The current level is not reported yet. Choose one to set it.'
+            : reportedReasoning === ''
+              ? "This chat uses the model's default level. Choose one to change it."
+              : `The gateway reports the level "${reportedReasoning}", which this app does not offer.`}
         </Text>
       ) : null}
       {reasoningAction.error ? <InlineNotice tone="danger">{reasoningAction.error}</InlineNotice> : null}

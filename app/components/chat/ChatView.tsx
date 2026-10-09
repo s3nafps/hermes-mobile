@@ -234,7 +234,7 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
         model={session.model}
         provider={session.provider}
         running={session.running}
-        reasoning={session.reasoningEffort || null}
+        reasoning={session.reasoningEffort}
       />
 
       <FlatList

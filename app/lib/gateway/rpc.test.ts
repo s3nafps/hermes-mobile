@@ -270,14 +270,27 @@ describe('RpcClient', () => {
     client.stop();
   });
 
-  it('replaces a connection attempt that is still handshaking when the app comes back', async () => {
+  it('leaves a connection attempt that is already in progress alone when the app comes back', async () => {
+    vi.useFakeTimers();
+    const client = new RpcClient({ getUrl: async () => 'ws://gateway/api/ws' });
+    client.start();
+    await vi.advanceTimersByTimeAsync(0);
+
+    client.setForeground(true);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(FakeSocket.instances.length).toBe(1);
+    client.stop();
+  });
+
+  it('replaces a connection attempt that is still handshaking when the user asks to reconnect', async () => {
     vi.useFakeTimers();
     const client = new RpcClient({ getUrl: async () => 'ws://gateway/api/ws' });
     client.start();
     await vi.advanceTimersByTimeAsync(0);
     const stuck = FakeSocket.instances[0];
 
-    client.setForeground(true);
+    client.wake();
     await vi.advanceTimersByTimeAsync(0);
 
     expect(stuck.readyState).toBe(FakeSocket.CLOSED);

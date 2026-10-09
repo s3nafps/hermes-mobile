@@ -107,7 +107,9 @@ export class RpcClient {
     if (this.heartbeat) clearInterval(this.heartbeat);
     this.heartbeat = null;
     if (!active || !this.wantOpen) return;
-    this.wake();
+    // An attempt already in progress is left alone. Its handshake timeout handles a hang, and
+    // abandoning it here would fail the connect that is waiting on it.
+    if (this.status !== 'connecting') this.wake();
     this.heartbeat = setInterval(() => void this.probe(), HEARTBEAT_MS);
   }
 

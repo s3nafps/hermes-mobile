@@ -86,6 +86,9 @@ export function ModelSheet({ visible, onClose, liveId, model, provider, running,
 
   // The gateway asks before an expensive model. The user confirms, then the change is sent again.
   const applyModel = async (chosen: string, confirmed = false): Promise<void> => {
+    // The gateway resets a chat's reasoning level to its config value when the model changes. The level
+    // in view is read before the switch, then sent again once the switch has gone through.
+    const level = reasoning;
     const result = await apply.run(chosen, confirmed);
     if (!result) return;
     if (result.confirm_required && !confirmed) {
@@ -98,6 +101,10 @@ export function ModelSheet({ visible, onClose, liveId, model, provider, running,
       return;
     }
     setPickedModel(null);
+    if (level) {
+      const saved = await reasoningAction.run(level);
+      if (saved) setPickedReasoning(saved);
+    }
     options.refetch();
   };
 

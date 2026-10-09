@@ -5,21 +5,18 @@ import { TabItems, type TabItemsProps } from '@/components/navigation/TabItems';
 import { tokens } from '@/constants/tokens';
 
 type Props = TabItemsProps & {
-  // Distance from the screen bottom to the top of the keyboard. The button sits above it.
+  // Distance from the screen bottom to the top of the keyboard. The button sits right above it.
   keyboardHeight: number;
-  // Extra space kept above the keyboard, for example to clear the chat composer.
+  // Gap between the keyboard and the button.
   lift: number;
-  // Which edge the button sits on. The Chat tab uses the left, where it clears the
-  // attachment chips' remove buttons on the right.
-  side: 'left' | 'right';
 };
 
 const BUTTON_SIZE = 52;
 const MENU_GAP = 12;
 
-// While the keyboard is open, the bottom bar is behind it. This round button stays above
-// the keyboard instead. Tapping it opens the same five tabs as a menu, and a tab closes it.
-export function FloatingTabs({ keyboardHeight, lift, side, state, descriptors, navigation }: Props) {
+// While the keyboard is open, the bottom bar is behind it. This round button stays right above
+// the keyboard instead, on the right. Tapping it opens the same five tabs as a menu, and a tab closes it.
+export function FloatingTabs({ keyboardHeight, lift, state, descriptors, navigation }: Props) {
   const [open, setOpen] = useState(false);
   const bottom = keyboardHeight + lift;
   const current = state.routes[state.index];
@@ -42,7 +39,7 @@ export function FloatingTabs({ keyboardHeight, lift, side, state, descriptors, n
         accessibilityLabel={open ? 'Close tab menu' : 'Open tab menu'}
         accessibilityState={{ expanded: open }}
         onPress={() => setOpen((value) => !value)}
-        style={[styles.button, side === 'left' ? styles.buttonLeft : styles.buttonRight, { bottom }]}>
+        style={[styles.button, { bottom }]}>
         {icon?.({ focused: true, color: tokens.accentText, size: 24 })}
       </Pressable>
     </>
@@ -52,6 +49,7 @@ export function FloatingTabs({ keyboardHeight, lift, side, state, descriptors, n
 const styles = StyleSheet.create({
   button: {
     position: 'absolute',
+    right: 16,
     width: BUTTON_SIZE,
     height: BUTTON_SIZE,
     borderRadius: BUTTON_SIZE / 2,
@@ -63,12 +61,6 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
     elevation: 8,
-  },
-  buttonLeft: {
-    left: 16,
-  },
-  buttonRight: {
-    right: 16,
   },
   menu: {
     position: 'absolute',

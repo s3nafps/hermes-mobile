@@ -299,13 +299,19 @@ export function GatewayProvider({ children }: { children: ReactNode }) {
     [http, activeProfile, connectTo],
   );
 
+  // Signs out only once the gateway has ended the session. If the request fails, the user
+  // stays signed in here, so the next launch does not sign straight back in.
   const signOut = useCallback(async () => {
-    try {
-      if (http) await http.POST('/auth/logout');
-    } finally {
-      stopRpc();
-      setPhase('signed_out');
+    if (http) {
+      try {
+        unwrap(await http.POST('/auth/logout'));
+      } catch (caught) {
+        // A session the gateway has already ended counts as signed out.
+        if (!(caught instanceof GatewayHttpError && caught.status === 401)) throw caught;
+      }
     }
+    stopRpc();
+    setPhase('signed_out');
   }, [http, stopRpc]);
 
   const value = useMemo<GatewayContextValue>(

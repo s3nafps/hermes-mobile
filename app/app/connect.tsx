@@ -3,6 +3,7 @@ import { Alert, Text, View } from 'react-native';
 import { router } from 'expo-router';
 
 import { useGateway } from '@/lib/gateway';
+import { isPlainHttpRisky } from '@/lib/gateway/http';
 import { useAction } from '@/lib/gateway/hooks';
 import { tokens } from '@/constants/tokens';
 import { Button, Card, Field, InlineNotice, Row, Screen, Section } from '@/components/ui';
@@ -25,6 +26,7 @@ export default function ConnectScreen() {
 
   const passwordProvider = gateway.authProviders.find((p) => p.supports_password);
   const needsSignIn = gateway.phase === 'signed_out';
+  const plainHttp = gateway.activeProfile ? isPlainHttpRisky(gateway.activeProfile.baseUrl) : false;
   const busy = gateway.phase === 'connecting' || add.pending || signIn.pending;
 
   const onAdd = async () => {
@@ -35,14 +37,30 @@ export default function ConnectScreen() {
     await add.run(name, address);
   };
 
+  const sendSignIn = async (provider: string) => {
+    await signIn.run(provider, username.trim(), password);
+    setPassword('');
+  };
+
   const onSignIn = async () => {
     if (!passwordProvider) return;
     if (!username.trim() || !password) {
       Alert.alert('Sign in', 'Enter your username and password.');
       return;
     }
-    await signIn.run(passwordProvider.name, username.trim(), password);
-    setPassword('');
+    if (plainHttp) {
+      // A password over plain http can be read by other devices on the network, so ask first.
+      Alert.alert(
+        'Send password unencrypted?',
+        'This address uses plain http. Other devices on the same network could read your password. Use an https address or Tailscale instead.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Send anyway', style: 'destructive', onPress: () => void sendSignIn(passwordProvider.name) },
+        ],
+      );
+      return;
+    }
+    await sendSignIn(passwordProvider.name);
   };
 
   return (
@@ -84,6 +102,11 @@ export default function ConnectScreen() {
                 textContentType="password"
               />
               {signIn.error ? <InlineNotice tone="danger">{signIn.error}</InlineNotice> : null}
+              {plainHttp ? (
+                <InlineNotice tone="warning">
+                  This address is not encrypted. Anything typed here can be read on the network. Use Tailscale or an https address.
+                </InlineNotice>
+              ) : null}
               <Button label="Sign in" onPress={onSignIn} loading={signIn.pending} disabled={busy} />
             </>
           ) : (

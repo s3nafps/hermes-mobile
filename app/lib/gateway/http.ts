@@ -41,6 +41,20 @@ export function normalizeBaseUrl(input: string): string {
   return url.origin + url.pathname.replace(/\/+$/, '');
 }
 
+// Plain http is only private on this phone (localhost), on a Tailscale address (WireGuard
+// encrypts it) or on an address in the 127/8 range. Anywhere else, other devices on the
+// network can read what is sent, passwords included.
+export function isPlainHttpRisky(baseUrl: string): boolean {
+  const url = new URL(baseUrl);
+  if (url.protocol !== 'http:') return false;
+  const host = url.hostname.toLowerCase();
+  if (host === 'localhost' || host === '[::1]' || host.endsWith('.ts.net')) return false;
+  const octets = host.split('.').map(Number);
+  const loopback = octets[0] === 127;
+  const tailscale = octets[0] === 100 && octets[1] >= 64 && octets[1] <= 127;
+  return !(octets.length === 4 && (loopback || tailscale));
+}
+
 // The dashboard's WebSocket lives on the same origin, with wss:// for https.
 export function toWebSocketUrl(baseUrl: string, path: string, query: Record<string, string>): string {
   const url = new URL(baseUrl + path);

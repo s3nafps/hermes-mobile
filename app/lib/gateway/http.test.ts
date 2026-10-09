@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { GatewayHttpError, normalizeBaseUrl, toWebSocketUrl, unwrap } from './http';
+import { GatewayHttpError, isPlainHttpRisky, normalizeBaseUrl, toWebSocketUrl, unwrap } from './http';
 
 describe('normalizeBaseUrl', () => {
   it('adds https when the user typed only a host and port', () => {
@@ -13,6 +13,26 @@ describe('normalizeBaseUrl', () => {
 
   it('refuses an empty address', () => {
     expect(() => normalizeBaseUrl('   ')).toThrow('Enter the gateway address.');
+  });
+});
+
+describe('isPlainHttpRisky', () => {
+  it('does not flag https', () => {
+    expect(isPlainHttpRisky('https://hermes.example.com')).toBe(false);
+  });
+
+  it('does not flag plain http on this phone or on a Tailscale address', () => {
+    expect(isPlainHttpRisky('http://localhost:9119')).toBe(false);
+    expect(isPlainHttpRisky('http://127.0.0.1:9119')).toBe(false);
+    expect(isPlainHttpRisky('http://100.101.102.103:9119')).toBe(false);
+    expect(isPlainHttpRisky('http://home.tailnet.ts.net:9119')).toBe(false);
+  });
+
+  it('flags plain http on a LAN or public address, and on addresses just outside Tailscale', () => {
+    expect(isPlainHttpRisky('http://192.168.1.20:9119')).toBe(true);
+    expect(isPlainHttpRisky('http://203.0.113.7:9119')).toBe(true);
+    expect(isPlainHttpRisky('http://100.128.0.1:9119')).toBe(true);
+    expect(isPlainHttpRisky('http://hermes.local:9119')).toBe(true);
   });
 });
 

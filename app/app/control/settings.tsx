@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import { Stack } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Platform, StyleSheet, Text } from 'react-native';
@@ -111,6 +112,10 @@ export default function SettingsScreen() {
     <Screen>
       <Stack.Screen options={{ title: 'Settings' }} />
       <ScreenTitle title="Settings and system" subtitle="This app and the gateway behind it." />
+
+      <Section label="This app">
+        <Row title="App version" value={Constants.expoConfig?.version ?? '—'} last />
+      </Section>
 
       <Section label="Gateway">
         <Row title="Connected to" subtitle={activeProfile?.baseUrl} value={activeProfile?.name} />

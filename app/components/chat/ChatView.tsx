@@ -40,6 +40,8 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
   const [pending, setPending] = useState<PendingAttachment[]>([]);
   const [actionItem, setActionItem] = useState<ChatItem | null>(null);
   const listRef = useRef<FlatList<ChatItem>>(null);
+  // True while the reader is at the bottom. Only then does a new message or token scroll the list.
+  const nearBottom = useRef(true);
   const keyboardHeight = useKeyboardHeight();
 
   // Uploads that finish after their chip was removed, or after this chat was left, are
@@ -63,9 +65,13 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
     };
   }, [liveId]);
 
+  // Follows the conversation, unless the reader has scrolled up to look at earlier text.
   useEffect(() => {
-    listRef.current?.scrollToEnd({ animated: true });
-  }, [session?.items.length, session?.streaming]);
+    if (nearBottom.current) listRef.current?.scrollToEnd({ animated: true });
+  }, [session?.items.length]);
+  useEffect(() => {
+    if (nearBottom.current) listRef.current?.scrollToEnd({ animated: false });
+  }, [session?.streaming]);
 
   if (!session) return <LoadingState label="Opening chat…" />;
 
@@ -130,6 +136,8 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
     if (!canSend) return;
     const text = draft.trim();
     const attachments = ready.map(({ name, kind, refText, previewUri }) => ({ name, kind, refText, previewUri }));
+    // Sending brings the reader back to the bottom, where the new message appears.
+    nearBottom.current = true;
     setSending(true);
     setError(null);
     setDraft('');
@@ -216,6 +224,15 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16, gap: 12, flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
+        onScroll={(event) => {
+          const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+          nearBottom.current = contentSize.height - contentOffset.y - layoutMeasurement.height < 80;
+        }}
+        onScrollBeginDrag={() => {
+          // A drag means the reader is looking at earlier text, so stop following the reply.
+          nearBottom.current = false;
+        }}
+        scrollEventThrottle={100}
         ListEmptyComponent={
           <EmptyState
             title="Start a conversation"
@@ -231,6 +248,12 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
           <Text numberOfLines={1} style={{ color: tokens.textMuted, fontSize: 13, flex: 1 }}>
             {activity}
           </Text>
+          {session.running && !canStop ? (
+            // The composer shows Queue while there is text, so Stop lives here, always in reach.
+            <Pressable onPress={() => void stop()} accessibilityRole="button" accessibilityLabel="Stop the reply" hitSlop={8}>
+              <Text style={{ color: tokens.danger, fontSize: 13, fontWeight: '600' }}>Stop</Text>
+            </Pressable>
+          ) : null}
         </View>
       ) : null}
 

@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import { Stack } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Platform, StyleSheet, Text } from 'react-native';
@@ -20,6 +21,7 @@ import {
 } from '@/components/ui';
 import { tokens } from '@/constants/tokens';
 import { unwrap, useAction, useGateway, useGatewayQuery } from '@/lib/gateway';
+import { messageOf } from '@/lib/gateway/hooks';
 
 const MONO = Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' });
 const MAX_OUTPUT = 4000;
@@ -92,7 +94,16 @@ export default function SettingsScreen() {
       action: 'Sign out',
       destructive: true,
       onConfirm: () => {
-        signOut().catch(() => Alert.alert('Sign out', 'Could not sign out. Try again.'));
+        signOut().catch((caught) =>
+          Alert.alert(
+            'Could not sign out',
+            `${messageOf(caught)} You can sign out on this phone only. The gateway session may stay active.`,
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Sign out on this phone', style: 'destructive', onPress: () => void signOut(true) },
+            ],
+          ),
+        );
       },
     });
 
@@ -111,6 +122,10 @@ export default function SettingsScreen() {
     <Screen>
       <Stack.Screen options={{ title: 'Settings' }} />
       <ScreenTitle title="Settings and system" subtitle="This app and the gateway behind it." />
+
+      <Section label="This app">
+        <Row title="App version" value={Constants.expoConfig?.version ?? '—'} last />
+      </Section>
 
       <Section label="Gateway">
         <Row title="Connected to" subtitle={activeProfile?.baseUrl} value={activeProfile?.name} />

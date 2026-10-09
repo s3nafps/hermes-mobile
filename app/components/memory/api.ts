@@ -1,6 +1,7 @@
 import { untyped } from '@/components/control/client';
 import { firstText, isRecord, primitiveRows, rawListOf, textOf, type Raw } from '@/components/bots/shared';
 import { unwrap, type GatewayHttp } from '@/lib/gateway';
+import { isSecretKey } from '@/lib/secrets';
 
 import type { MemoryEntry, MemoryProvider, MemoryStatus, ProviderSetting } from './types';
 
@@ -62,9 +63,7 @@ export async function resetMemory(http: GatewayHttp): Promise<void> {
   unwrap(await http.POST('/api/memory/reset', { body: { target: 'all' } }));
 }
 
-export function isSecretKey(key: string): boolean {
-  return /key|token|secret|password/i.test(key);
-}
+export { isSecretKey };
 
 const META_KEYS = ['name', 'provider', 'ok', 'error', 'label', 'description'];
 

@@ -10,7 +10,7 @@ export type RpcEvent = {
 
 export type RpcStatus = 'connecting' | 'open' | 'closed';
 
-// Codes the client sets itself. Server errors keep their own positive codes.
+// Codes the client sets itself. Server errors keep their own codes.
 // RPC_NOT_CONNECTED: the request was never sent, so the gateway did not get it.
 // RPC_LOST: the request was sent but no answer came back. The gateway may still have acted on it.
 export const RPC_NOT_CONNECTED = -1;
@@ -53,6 +53,8 @@ const STABLE_MS = 5_000;
 // While the app is on screen, a silent socket is checked this often.
 const HEARTBEAT_MS = 30_000;
 const PROBE_TIMEOUT_MS = 8_000;
+// A socket that has not finished its handshake by then is abandoned.
+const HANDSHAKE_MS = 10_000;
 // A cheap request that does not run the agent. The gateway answers it at once.
 const PROBE_METHOD = 'session.active_list';
 
@@ -66,8 +68,11 @@ export class RpcClient {
   private status: RpcStatus = 'closed';
   private wantOpen = false;
   private attempts = 0;
+  // Bumped by stop(), so an attempt that was waiting for its URL when the client stopped does nothing.
+  private generation = 0;
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
   private stableTimer: ReturnType<typeof setTimeout> | null = null;
+  private handshakeTimer: ReturnType<typeof setTimeout> | null = null;
   private heartbeat: ReturnType<typeof setInterval> | null = null;
 
   constructor(options: RpcClientOptions) {
@@ -87,6 +92,7 @@ export class RpcClient {
 
   stop(): void {
     this.wantOpen = false;
+    this.generation += 1;
     this.clearTimers();
     const socket = this.socket;
     this.socket = null;
@@ -112,7 +118,10 @@ export class RpcClient {
       void this.probe();
       return;
     }
-    if (this.status === 'connecting') return;
+    // Still asking for the URL. That request has its own deadline, so there is nothing to abandon yet.
+    if (this.status === 'connecting' && !this.socket) return;
+    // A handshake still running is abandoned, and the reconnect starts now.
+    if (this.socket) this.dropSocket();
     if (this.retryTimer) clearTimeout(this.retryTimer);
     this.retryTimer = null;
     void this.open();
@@ -152,11 +161,13 @@ export class RpcClient {
 
   private async open(): Promise<void> {
     if (!this.wantOpen) return;
+    const generation = this.generation;
     this.setStatus('connecting');
     let url: string;
     try {
       url = await this.options.getUrl();
     } catch (error) {
+      if (generation !== this.generation) return;
       this.setStatus('closed');
       const status = (error as { status?: number }).status;
       if (status === 401 || status === 403) {
@@ -169,13 +180,26 @@ export class RpcClient {
       }
       return;
     }
-    if (!this.wantOpen) return;
+    if (!this.wantOpen || generation !== this.generation || this.socket) return;
 
-    const socket = new WebSocket(url);
+    let socket: WebSocket;
+    try {
+      socket = new WebSocket(url);
+    } catch {
+      // The socket could not even be created. Count it as a failed attempt.
+      this.setStatus('closed');
+      if (this.wantOpen) this.scheduleReconnect();
+      return;
+    }
     this.socket = socket;
+    this.handshakeTimer = setTimeout(() => {
+      this.handshakeTimer = null;
+      if (this.socket === socket) this.dropSocket();
+    }, HANDSHAKE_MS);
 
     socket.onopen = () => {
       if (this.socket !== socket) return;
+      this.endHandshake();
       this.setStatus('open');
       this.endStable();
       this.stableTimer = setTimeout(() => {
@@ -190,6 +214,7 @@ export class RpcClient {
     socket.onclose = (close) => {
       if (this.socket !== socket) return;
       this.socket = null;
+      this.endHandshake();
       this.endStable();
       this.rejectAll(new RpcError(RPC_LOST, 'The connection to the gateway closed.'));
       this.setStatus('closed');
@@ -203,14 +228,14 @@ export class RpcClient {
   }
 
   // Sends a light request. A socket that never answers is dropped, so the normal reconnect takes
-  // over. A server error reply still proves the link works, so the socket is kept.
+  // over. Only a reply from the server proves the link works.
   private async probe(): Promise<void> {
     const socket = this.socket;
     if (this.status !== 'open' || !socket) return;
     try {
       await this.call(PROBE_METHOD, {}, PROBE_TIMEOUT_MS);
     } catch (caught) {
-      if (caught instanceof RpcError && caught.code !== RPC_LOST) return;
+      if (caught instanceof RpcError && caught.code !== RPC_LOST && caught.code !== RPC_NOT_CONNECTED) return;
       if (this.socket === socket) this.dropSocket();
     }
   }
@@ -220,6 +245,7 @@ export class RpcClient {
     const socket = this.socket;
     if (!socket) return;
     this.socket = null;
+    this.endHandshake();
     this.endStable();
     socket.close(1000, 'no answer');
     this.rejectAll(new RpcError(RPC_LOST, 'The connection to the gateway closed.'));
@@ -236,6 +262,11 @@ export class RpcClient {
     }, delay);
   }
 
+  private endHandshake(): void {
+    if (this.handshakeTimer) clearTimeout(this.handshakeTimer);
+    this.handshakeTimer = null;
+  }
+
   private endStable(): void {
     if (this.stableTimer) clearTimeout(this.stableTimer);
     this.stableTimer = null;
@@ -244,6 +275,7 @@ export class RpcClient {
   private clearTimers(): void {
     if (this.retryTimer) clearTimeout(this.retryTimer);
     this.retryTimer = null;
+    this.endHandshake();
     this.endStable();
     if (this.heartbeat) clearInterval(this.heartbeat);
     this.heartbeat = null;

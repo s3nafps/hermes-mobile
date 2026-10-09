@@ -237,4 +237,105 @@ describe('RpcClient', () => {
     expect(FakeSocket.instances.length).toBe(3);
     client.stop();
   });
+
+  it('resets the reconnect backoff once a socket has stayed open for a while', async () => {
+    vi.useFakeTimers();
+    const client = new RpcClient({ getUrl: async () => 'ws://gateway/api/ws' });
+    client.start();
+    await vi.advanceTimersByTimeAsync(0);
+    FakeSocket.instances[0].open();
+    FakeSocket.instances[0].drop();
+    await vi.advanceTimersByTimeAsync(1_300);
+    expect(FakeSocket.instances.length).toBe(2);
+
+    FakeSocket.instances[1].open();
+    await vi.advanceTimersByTimeAsync(5_000);
+    FakeSocket.instances[1].drop();
+    await vi.advanceTimersByTimeAsync(1_300);
+    expect(FakeSocket.instances.length).toBe(3);
+    client.stop();
+  });
+
+  it('gives up on a handshake that never finishes, then reconnects', async () => {
+    vi.useFakeTimers();
+    const client = new RpcClient({ getUrl: async () => 'ws://gateway/api/ws' });
+    client.start();
+    await vi.advanceTimersByTimeAsync(0);
+
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(client.getStatus()).toBe('closed');
+
+    await vi.advanceTimersByTimeAsync(1_300);
+    expect(FakeSocket.instances.length).toBe(2);
+    client.stop();
+  });
+
+  it('replaces a connection attempt that is still handshaking when the app comes back', async () => {
+    vi.useFakeTimers();
+    const client = new RpcClient({ getUrl: async () => 'ws://gateway/api/ws' });
+    client.start();
+    await vi.advanceTimersByTimeAsync(0);
+    const stuck = FakeSocket.instances[0];
+
+    client.setForeground(true);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(stuck.readyState).toBe(FakeSocket.CLOSED);
+    expect(FakeSocket.instances.length).toBe(2);
+    client.stop();
+  });
+
+  it('checks a silent socket every 30 seconds while the app is on screen', async () => {
+    vi.useFakeTimers();
+    const client = new RpcClient({ getUrl: async () => 'ws://gateway/api/ws' });
+    client.start();
+    await vi.advanceTimersByTimeAsync(0);
+    const socket = FakeSocket.instances[0];
+    socket.open();
+
+    client.setForeground(true);
+    socket.receive(JSON.stringify({ jsonrpc: '2.0', id: sentRequest(socket).id, result: [] }));
+    expect(socket.sent.length).toBe(1);
+
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(socket.sent.length).toBe(2);
+    expect(sentRequest(socket, 1).method).toBe('session.active_list');
+
+    await vi.advanceTimersByTimeAsync(8_000);
+    expect(client.getStatus()).toBe('closed');
+    client.stop();
+  });
+
+  it('stops checking the socket once the app is in the background', async () => {
+    vi.useFakeTimers();
+    const client = new RpcClient({ getUrl: async () => 'ws://gateway/api/ws' });
+    client.start();
+    await vi.advanceTimersByTimeAsync(0);
+    const socket = FakeSocket.instances[0];
+    socket.open();
+
+    client.setForeground(true);
+    socket.receive(JSON.stringify({ jsonrpc: '2.0', id: sentRequest(socket).id, result: [] }));
+    client.setForeground(false);
+    await vi.advanceTimersByTimeAsync(60_000);
+
+    expect(socket.sent.length).toBe(1);
+    client.stop();
+  });
+
+  it('does not open a second socket when it is stopped and started while a URL is being fetched', async () => {
+    const urls: Array<(url: string) => void> = [];
+    const client = new RpcClient({ getUrl: () => new Promise<string>((resolve) => urls.push(resolve)) });
+    client.start();
+    client.stop();
+    client.start();
+
+    urls[1]('ws://gateway/api/ws');
+    await vi.waitFor(() => expect(FakeSocket.instances.length).toBe(1));
+
+    urls[0]('ws://gateway/api/ws');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(FakeSocket.instances.length).toBe(1);
+    client.stop();
+  });
 });

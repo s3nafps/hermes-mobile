@@ -12,12 +12,14 @@ import {
 } from './types';
 
 export type ChatItem =
-  // failed: the gateway rejected the message, so it was not sent. unknown: the connection dropped
-  // before an answer, so it may or may not have reached the gateway.
-  | { kind: 'user'; id: string; text: string; failed?: boolean; unknown?: boolean; attachments?: SentAttachment[] }
+  // pending: the gateway has not answered yet. failed: the gateway rejected the message, so it was not
+  // sent. unknown: the connection dropped before an answer, so it may or may not have reached the gateway.
+  | { kind: 'user'; id: string; text: string; pending?: boolean; failed?: boolean; unknown?: boolean; attachments?: SentAttachment[] }
   | { kind: 'assistant'; id: string; text: string; status: 'complete' | 'interrupted' | 'error'; usage?: Usage }
   | { kind: 'tool'; id: string; toolId: string; name: string; context: string; done: boolean; summary?: string; durationS?: number; risk?: string }
   | { kind: 'notice'; id: string; text: string; tone: 'info' | 'error' };
+
+type UserItem = Extract<ChatItem, { kind: 'user' }>;
 
 export type LiveSession = {
   liveId: string;
@@ -90,6 +92,7 @@ export type ChatAction =
       waiting: boolean;
     }
   | { type: 'local_user'; liveId: string; id: string; text: string; attachments?: SentAttachment[] }
+  | { type: 'user_sent'; liveId: string; id: string }
   | { type: 'user_failed'; liveId: string; id: string; message: string }
   | { type: 'user_unknown'; liveId: string; id: string }
   | { type: 'queued'; liveId: string; text: string }
@@ -153,16 +156,25 @@ export function itemsFromWire(messages: WireMessage[]): ChatItem[] {
   });
 }
 
-// The user text the gateway already has for this session: its last few messages, plus the
-// turn that is running or queued. A send that dropped can be checked against it.
-function recentUserTexts(messages: WireMessage[], inflightUser: string | null, queued: string | null): string[] {
-  const stored = messages.slice(-6).flatMap((message) => (message.role === 'user' ? [message.text] : []));
-  return [...stored, ...(inflightUser ? [inflightUser] : []), ...(queued ? [queued] : [])];
-}
+// Progress from the agent means it is no longer waiting on a prompt.
+const PROGRESS_EVENTS = new Set([
+  'message.delta',
+  'message.interim',
+  'thinking.delta',
+  'status.update',
+  'tool.generating',
+  'tool.start',
+  'tool.output_risk',
+  'tool.complete',
+]);
 
-// An unknown send is delivered once the gateway shows its text. A failed one never is.
-function deliveredAfterDrop(item: Extract<ChatItem, { kind: 'user' }>, gatewayTexts: string[]): boolean {
-  return Boolean(item.unknown) && item.text !== '' && gatewayTexts.some((text) => text.includes(item.text));
+// Once a session has no prompt left, the agent is no longer waiting on one.
+function settleWaiting(state: ChatState, liveIds: string[]): ChatState {
+  return liveIds.reduce((next, liveId) => {
+    const session = next.sessions[liveId];
+    if (!session?.waiting || next.prompts.some((p) => p.liveId === liveId)) return next;
+    return put(next, { ...session, waiting: false });
+  }, state);
 }
 
 function sessionInfoPatch(session: LiveSession, info: Partial<SessionInfo>): LiveSession {
@@ -189,19 +201,22 @@ export function reduce(state: ChatState, action: ChatAction): ChatState {
   switch (action.type) {
     case 'hydrate': {
       const base = ensure(state, action.liveId);
-      const gatewayTexts = recentUserTexts(action.messages, action.inflightUser, action.queued);
-      // Sends still on screen are kept after a reconnect, so a failed or unsure message is not lost.
-      // An unsure one the gateway now shows has arrived, so it is dropped here.
+      // Sends that are still awaiting an answer, failed, or unsure stay on screen across a reconnect.
+      // An unsure one is not matched against the stored history: the user decides whether it arrived.
       const local = base.items.filter(
-        (item): item is Extract<ChatItem, { kind: 'user' }> =>
-          item.kind === 'user' && (Boolean(item.failed) || (Boolean(item.unknown) && !deliveredAfterDrop(item, gatewayTexts))),
+        (item): item is UserItem => item.kind === 'user' && Boolean(item.pending || item.failed || item.unknown),
       );
+      // A running turn's message is not in the stored history until the turn completes.
+      const running: UserItem[] =
+        action.inflightUser && !local.some((item) => item.text === action.inflightUser)
+          ? [{ kind: 'user', id: 'inflight', text: action.inflightUser }]
+          : [];
       const next: LiveSession = {
         ...sessionInfoPatch(base, action.info),
         liveId: action.liveId,
         storedKey: action.storedKey ?? base.storedKey,
         running: action.running,
-        items: [...itemsFromWire(action.messages), ...local],
+        items: [...itemsFromWire(action.messages), ...running, ...local],
         streaming: action.inflight ?? '',
         thinking: '',
         statusLine: '',
@@ -214,14 +229,22 @@ export function reduce(state: ChatState, action: ChatAction): ChatState {
 
     case 'local_user': {
       const session = ensure(state, action.liveId);
-      const item: ChatItem = { kind: 'user', id: action.id, text: action.text, attachments: action.attachments };
+      const item: ChatItem = { kind: 'user', id: action.id, text: action.text, attachments: action.attachments, pending: true };
       return put(state, { ...session, items: [...session.items, item], lastError: null });
+    }
+
+    case 'user_sent': {
+      const session = ensure(state, action.liveId);
+      const items = session.items.map((item) =>
+        item.kind === 'user' && item.id === action.id ? { ...item, pending: false } : item,
+      );
+      return put(state, { ...session, items });
     }
 
     case 'user_failed': {
       const session = ensure(state, action.liveId);
       const items = session.items.map((item) =>
-        item.kind === 'user' && item.id === action.id ? { ...item, failed: true } : item,
+        item.kind === 'user' && item.id === action.id ? { ...item, pending: false, failed: true } : item,
       );
       const notice: ChatItem = { kind: 'notice', id: itemId('n', 0), text: action.message, tone: 'error' };
       return put(state, { ...session, items: [...items, notice] });
@@ -230,7 +253,7 @@ export function reduce(state: ChatState, action: ChatAction): ChatState {
     case 'user_unknown': {
       const session = ensure(state, action.liveId);
       const items = session.items.map((item) =>
-        item.kind === 'user' && item.id === action.id ? { ...item, unknown: true } : item,
+        item.kind === 'user' && item.id === action.id ? { ...item, pending: false, unknown: true } : item,
       );
       return put(state, { ...session, items });
     }
@@ -244,8 +267,11 @@ export function reduce(state: ChatState, action: ChatAction): ChatState {
       return put(state, { ...session, items: session.items.filter((item) => item.id !== action.id) });
     }
 
-    case 'drop_prompt':
-      return { ...state, prompts: state.prompts.filter((p) => p.id !== action.id) };
+    case 'drop_prompt': {
+      const dropped = state.prompts.find((p) => p.id === action.id);
+      const next = { ...state, prompts: state.prompts.filter((p) => p.id !== action.id) };
+      return dropped ? settleWaiting(next, [dropped.liveId]) : next;
+    }
 
     case 'drop_session': {
       const { [action.liveId]: _removed, ...rest } = state.sessions;
@@ -292,7 +318,8 @@ function reduceEvent(state: ChatState, event: RpcEvent, now: number): ChatState 
 
   if (!liveId) return state;
 
-  const session = ensure(state, liveId);
+  const current = ensure(state, liveId);
+  const session = PROGRESS_EVENTS.has(type) && current.waiting ? { ...current, waiting: false } : current;
 
   switch (type) {
     case 'session.info': {
@@ -463,7 +490,8 @@ function reduceEvent(state: ChatState, event: RpcEvent, now: number): ChatState 
     case 'sudo.expire':
     case 'secret.expire': {
       const requestId = String(payload.request_id ?? '');
-      return { ...state, prompts: state.prompts.filter((p) => p.requestId !== requestId) };
+      const next = { ...state, prompts: state.prompts.filter((p) => p.requestId !== requestId) };
+      return settleWaiting(next, [liveId]);
     }
 
     case 'error': {

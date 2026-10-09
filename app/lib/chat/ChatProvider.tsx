@@ -131,7 +131,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const submit = useCallback(
     async (liveId: string, text: string, attachments: SentAttachment[] = []): Promise<SendOutcome> => {
-      const client = requireConnected(rpc);
       const trimmed = text.trim();
       if (!trimmed && attachments.length === 0) return 'failed';
       // The agent needs some words to act on, so files sent alone get a short request.
@@ -140,10 +139,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       const localId = nextLocalId();
       dispatch({ type: 'local_user', liveId, id: localId, text: trimmed, attachments });
       try {
+        // Checked here, not before the bubble is shown, so a missing connection marks the bubble failed.
+        const client = requireConnected(rpc);
         const result = await client.call<{ status: string }>('prompt.submit', {
           session_id: liveId,
           text: [body, ...refs].join('\n'),
         });
+        dispatch({ type: 'user_sent', liveId, id: localId });
         if (result.status === 'queued') dispatch({ type: 'queued', liveId, text: body });
         return 'sent';
       } catch (caught) {

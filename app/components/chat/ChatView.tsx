@@ -12,7 +12,7 @@ import { useKeyboardHeight } from '@/components/navigation/useKeyboardHeight';
 import { Badge, Button, EmptyState, InlineNotice, LoadingState, Sheet, StatusDot } from '@/components/ui';
 import { MONO, tokens } from '@/constants/tokens';
 import { useChat } from '@/lib/chat/ChatProvider';
-import type { ChatItem } from '@/lib/chat/reducer';
+import { livePrompts, type ChatItem } from '@/lib/chat/reducer';
 import { useGateway } from '@/lib/gateway';
 import { messageOf } from '@/lib/gateway/hooks';
 
@@ -80,7 +80,7 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
     : session.items;
 
   // The agent is blocked on a prompt this screen never showed, for example one raised during a drop.
-  const missedAnswer = session.waiting && !chat.state.prompts.some((prompt) => prompt.liveId === liveId);
+  const missedAnswer = session.waiting && !livePrompts(chat.state.prompts, Date.now()).some((prompt) => prompt.liveId === liveId);
   const activity =
     session.thinking ||
     session.statusLine ||
@@ -245,7 +245,14 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
             body="Messages stay in this chat, so you can come back to them later."
           />
         }
-        renderItem={({ item }) => <ChatRow item={item} onLongPress={setActionItem} onRetry={(user) => void retry(user)} />}
+        renderItem={({ item }) => (
+          <ChatRow
+            item={item}
+            onLongPress={setActionItem}
+            onRetry={(user) => void retry(user)}
+            onDismiss={(user) => chat.dropItem(liveId, user.id)}
+          />
+        )}
       />
 
       {activity ? (
@@ -393,9 +400,10 @@ type RowProps = {
   item: ChatItem;
   onLongPress: (item: ChatItem) => void;
   onRetry: (item: UserItem) => void;
+  onDismiss: (item: UserItem) => void;
 };
 
-function ChatRow({ item, onLongPress, onRetry }: RowProps) {
+function ChatRow({ item, onLongPress, onRetry, onDismiss }: RowProps) {
   switch (item.kind) {
     case 'user':
       return (
@@ -421,14 +429,24 @@ function ChatRow({ item, onLongPress, onRetry }: RowProps) {
               <Text style={{ color: tokens.text, fontSize: 15, lineHeight: 21 }}>{item.text}</Text>
             </Pressable>
           ) : null}
+          {item.pending ? <Text style={{ color: tokens.textMuted, fontSize: 12 }}>Sending…</Text> : null}
           {item.failed || item.unknown ? (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               <Text style={{ color: item.failed ? tokens.danger : tokens.textMuted, fontSize: 12 }}>
                 {item.failed ? 'Not sent.' : 'Not sure it was sent.'}
               </Text>
               <Pressable onPress={() => onRetry(item)} accessibilityRole="button" accessibilityLabel="Send this message again" hitSlop={8}>
-                <Text style={{ color: tokens.accent, fontSize: 12, fontWeight: '600' }}>Retry</Text>
+                <Text style={{ color: tokens.accent, fontSize: 12, fontWeight: '600' }}>{item.failed ? 'Retry' : 'Send again'}</Text>
               </Pressable>
+              {item.unknown ? (
+                <Pressable
+                  onPress={() => onDismiss(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel="It was already sent. Remove this copy"
+                  hitSlop={8}>
+                  <Text style={{ color: tokens.accent, fontSize: 12, fontWeight: '600' }}>It was sent</Text>
+                </Pressable>
+              ) : null}
             </View>
           ) : null}
         </View>

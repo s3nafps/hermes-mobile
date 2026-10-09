@@ -52,7 +52,7 @@ describe('sending a message', () => {
   it('shows the user message at once and marks it failed when the gateway rejects it', () => {
     let state = reduce(EMPTY_STATE, { type: 'local_user', liveId: LIVE, id: 'u1', text: 'hi' });
 
-    expect(state.sessions[LIVE].items).toEqual([{ kind: 'user', id: 'u1', text: 'hi', attachments: undefined }]);
+    expect(state.sessions[LIVE].items).toEqual([{ kind: 'user', id: 'u1', text: 'hi', attachments: undefined, pending: true }]);
 
     state = reduce(state, { type: 'user_failed', liveId: LIVE, id: 'u1', message: 'Not allowed' });
 
@@ -123,16 +123,53 @@ describe('reconnecting with sends still on screen', () => {
     ]);
   });
 
-  it('drops an unsure message once the gateway shows its text, so it is not sent twice', () => {
-    const state = hydrated(unsure('deploy it'), [{ role: 'user', text: 'deploy it' }] as WireMessage[]);
+  it('keeps an unsure message even when the gateway shows its text, so the user decides', () => {
+    // Matching text is not proof: a short reply such as "ok" can appear in any history.
+    const state = hydrated(unsure('ok'), [{ role: 'user', text: 'Can you look at the logs?' }] as WireMessage[]);
 
-    expect(state.sessions[LIVE].items).toEqual([{ kind: 'user', id: 'h0', text: 'deploy it' }]);
+    expect(state.sessions[LIVE].items).toEqual([
+      { kind: 'user', id: 'h0', text: 'Can you look at the logs?' },
+      expect.objectContaining({ kind: 'user', id: 'u1', text: 'ok', unknown: true }),
+    ]);
   });
 
-  it('treats an unsure message as delivered when it is the turn the gateway is running', () => {
-    const state = hydrated(unsure('deploy it'), [], { running: true, inflightUser: 'deploy it' });
+  it('shows a message the gateway is running once, and not twice next to its unsure copy', () => {
+    const running = hydrated(EMPTY_STATE, [], { running: true, inflightUser: 'deploy it' });
+    expect(running.sessions[LIVE].items).toEqual([{ kind: 'user', id: 'inflight', text: 'deploy it' }]);
 
-    expect(state.sessions[LIVE].items).toEqual([]);
+    const withCopy = hydrated(unsure('deploy it'), [], { running: true, inflightUser: 'deploy it' });
+    expect(withCopy.sessions[LIVE].items).toEqual([expect.objectContaining({ id: 'u1', unknown: true })]);
+  });
+
+  it('keeps a send that is still awaiting its answer through a reconnect', () => {
+    const sent = reduce(EMPTY_STATE, { type: 'local_user', liveId: LIVE, id: 'u1', text: 'hi' });
+    const state = hydrated(sent, []);
+
+    expect(state.sessions[LIVE].items).toEqual([expect.objectContaining({ id: 'u1', pending: true })]);
+  });
+
+  it('drops a sent message on reconnect, since the gateway history has it once the turn completes', () => {
+    let state = reduce(EMPTY_STATE, { type: 'local_user', liveId: LIVE, id: 'u1', text: 'hi' });
+    state = reduce(state, { type: 'user_sent', liveId: LIVE, id: 'u1' });
+    state = hydrated(state, [{ role: 'user', text: 'hi' }] as WireMessage[]);
+
+    expect(state.sessions[LIVE].items).toEqual([{ kind: 'user', id: 'h0', text: 'hi' }]);
+  });
+
+  it('clears the waiting flag when the agent makes progress again', () => {
+    let state = hydrated(EMPTY_STATE, [], { running: true, waiting: true });
+    state = reduce(state, event('tool.start', { tool_id: 't1', name: 'terminal' }));
+
+    expect(state.sessions[LIVE].waiting).toBe(false);
+  });
+
+  it('clears the waiting flag once the last prompt for the session is answered', () => {
+    let state = hydrated(EMPTY_STATE, [], { running: true, waiting: true });
+    state = reduce(state, event('approval.request', { command: 'ls', description: 'list files' }));
+    expect(state.sessions[LIVE].waiting).toBe(true);
+
+    state = reduce(state, { type: 'drop_prompt', id: state.prompts[0].id });
+    expect(state.sessions[LIVE].waiting).toBe(false);
   });
 
   it('keeps a failed message through a reconnect, since the gateway never had it', () => {

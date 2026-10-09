@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { RpcClient, RpcError, type RpcEvent, type RpcStatus } from './rpc';
+import { RPC_NOT_CONNECTED, RpcClient, RpcError, type RpcEvent, type RpcStatus } from './rpc';
 
 // A stand-in for the browser WebSocket. Tests drive it: open it, send frames to it, or drop it.
 class FakeSocket {
@@ -159,6 +159,82 @@ describe('RpcClient', () => {
     socket.open();
 
     await expect(client.call('session.list')).rejects.toThrow('session.list timed out.');
+    client.stop();
+  });
+
+  it('marks a call made while disconnected as never sent', async () => {
+    const client = new RpcClient({ getUrl: async () => 'ws://gateway/api/ws' });
+    await expect(client.call('session.list')).rejects.toMatchObject({ code: RPC_NOT_CONNECTED });
+  });
+
+  it('reconnects at once when the app comes back, instead of waiting out the backoff', async () => {
+    vi.useFakeTimers();
+    const client = new RpcClient({ getUrl: async () => 'ws://gateway/api/ws' });
+    client.start();
+    await vi.advanceTimersByTimeAsync(0);
+    FakeSocket.instances[0].open();
+    FakeSocket.instances[0].drop();
+
+    client.setForeground(true);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(FakeSocket.instances.length).toBe(2);
+    client.stop();
+  });
+
+  it('drops a socket that stops answering while the app is on screen, then reconnects', async () => {
+    vi.useFakeTimers();
+    const client = new RpcClient({ getUrl: async () => 'ws://gateway/api/ws' });
+    client.start();
+    await vi.advanceTimersByTimeAsync(0);
+    const first = FakeSocket.instances[0];
+    first.open();
+
+    client.setForeground(true);
+    expect(sentRequest(first).method).toBe('session.active_list');
+
+    await vi.advanceTimersByTimeAsync(8_000);
+    expect(client.getStatus()).toBe('closed');
+
+    await vi.advanceTimersByTimeAsync(2_000);
+    expect(FakeSocket.instances.length).toBe(2);
+    client.stop();
+  });
+
+  it('keeps a socket whose probe gets an error answer, since the link itself works', async () => {
+    vi.useFakeTimers();
+    const client = new RpcClient({ getUrl: async () => 'ws://gateway/api/ws' });
+    client.start();
+    await vi.advanceTimersByTimeAsync(0);
+    const socket = FakeSocket.instances[0];
+    socket.open();
+
+    client.setForeground(true);
+    const probe = sentRequest(socket);
+    socket.receive(JSON.stringify({ jsonrpc: '2.0', id: probe.id, error: { code: 4001, message: 'no' } }));
+    await vi.advanceTimersByTimeAsync(20_000);
+
+    expect(client.getStatus()).toBe('open');
+    expect(FakeSocket.instances.length).toBe(1);
+    client.stop();
+  });
+
+  it('keeps backing off while a socket keeps dropping right after it opens', async () => {
+    vi.useFakeTimers();
+    const client = new RpcClient({ getUrl: async () => 'ws://gateway/api/ws' });
+    client.start();
+    await vi.advanceTimersByTimeAsync(0);
+    FakeSocket.instances[0].open();
+    FakeSocket.instances[0].drop();
+    await vi.advanceTimersByTimeAsync(1_300);
+    expect(FakeSocket.instances.length).toBe(2);
+
+    FakeSocket.instances[1].open();
+    FakeSocket.instances[1].drop();
+    await vi.advanceTimersByTimeAsync(1_300);
+    expect(FakeSocket.instances.length).toBe(2);
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(FakeSocket.instances.length).toBe(3);
     client.stop();
   });
 });

@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { AppState } from 'react-native';
 
 import {
   createGatewayHttp,
@@ -168,7 +169,10 @@ export function GatewayProvider({ children }: { children: ReactNode }) {
         const socket = new RpcClient({
           getUrl: async () => {
             if (info.auth_required) {
-              const ticket = unwrap(await client.POST('/api/auth/ws-ticket')) as unknown as { ticket: string };
+              // Bounded like the other requests, so a hung ticket request cannot stall every reconnect.
+              const ticket = unwrap(
+                await withDeadline((signal) => client.POST('/api/auth/ws-ticket', { signal })),
+              ) as unknown as { ticket: string };
               return toWebSocketUrl(profile.baseUrl, '/api/ws', { ticket: ticket.ticket });
             }
             return toWebSocketUrl(profile.baseUrl, '/api/ws', { token: token ?? '' });
@@ -230,6 +234,17 @@ export function GatewayProvider({ children }: { children: ReactNode }) {
       rpcRef.current?.stop();
     };
   }, [connectTo]);
+
+  // The socket reconnects at once when the app comes back, and is checked while the app is on screen.
+  useEffect(() => {
+    if (!rpc) return;
+    rpc.setForeground(AppState.currentState === 'active');
+    const subscription = AppState.addEventListener('change', (state) => rpc.setForeground(state === 'active'));
+    return () => {
+      subscription.remove();
+      rpc.setForeground(false);
+    };
+  }, [rpc]);
 
   const persist = useCallback(async (nextProfiles: GatewayProfile[], nextActive: string | null) => {
     setProfiles(nextProfiles);

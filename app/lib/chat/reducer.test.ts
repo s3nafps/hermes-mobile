@@ -91,3 +91,63 @@ describe('restoring a conversation', () => {
     ]);
   });
 });
+
+describe('reconnecting with sends still on screen', () => {
+  function hydrated(state: ChatState, messages: WireMessage[], extra: Partial<Parameters<typeof reduce>[1]> = {}): ChatState {
+    return reduce(state, {
+      type: 'hydrate',
+      liveId: LIVE,
+      storedKey: 'stored-1',
+      messages,
+      info: {},
+      running: false,
+      inflight: null,
+      inflightUser: null,
+      queued: null,
+      waiting: false,
+      ...extra,
+    } as Parameters<typeof reduce>[1]);
+  }
+
+  function unsure(text: string): ChatState {
+    const sent = reduce(EMPTY_STATE, { type: 'local_user', liveId: LIVE, id: 'u1', text });
+    return reduce(sent, { type: 'user_unknown', liveId: LIVE, id: 'u1' });
+  }
+
+  it('keeps an unsure message when the gateway does not show it', () => {
+    const state = hydrated(unsure('deploy it'), [{ role: 'user', text: 'earlier question' }] as WireMessage[]);
+
+    expect(state.sessions[LIVE].items).toEqual([
+      { kind: 'user', id: 'h0', text: 'earlier question' },
+      expect.objectContaining({ kind: 'user', id: 'u1', text: 'deploy it', unknown: true }),
+    ]);
+  });
+
+  it('drops an unsure message once the gateway shows its text, so it is not sent twice', () => {
+    const state = hydrated(unsure('deploy it'), [{ role: 'user', text: 'deploy it' }] as WireMessage[]);
+
+    expect(state.sessions[LIVE].items).toEqual([{ kind: 'user', id: 'h0', text: 'deploy it' }]);
+  });
+
+  it('treats an unsure message as delivered when it is the turn the gateway is running', () => {
+    const state = hydrated(unsure('deploy it'), [], { running: true, inflightUser: 'deploy it' });
+
+    expect(state.sessions[LIVE].items).toEqual([]);
+  });
+
+  it('keeps a failed message through a reconnect, since the gateway never had it', () => {
+    let state = reduce(EMPTY_STATE, { type: 'local_user', liveId: LIVE, id: 'u1', text: 'hi' });
+    state = reduce(state, { type: 'user_failed', liveId: LIVE, id: 'u1', message: 'Not allowed' });
+    state = hydrated(state, []);
+
+    expect(state.sessions[LIVE].items).toEqual([expect.objectContaining({ kind: 'user', id: 'u1', failed: true })]);
+  });
+
+  it('flags a session the agent is waiting on, and clears the flag when the turn ends', () => {
+    let state = hydrated(EMPTY_STATE, [], { running: true, waiting: true });
+    expect(state.sessions[LIVE].waiting).toBe(true);
+
+    state = reduce(state, event('message.complete', { status: 'interrupted' }));
+    expect(state.sessions[LIVE].waiting).toBe(false);
+  });
+});

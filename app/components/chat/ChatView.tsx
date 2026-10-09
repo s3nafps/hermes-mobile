@@ -79,7 +79,12 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
     ? [...session.items, { kind: 'assistant', id: 'streaming', text: session.streaming, status: 'complete' }]
     : session.items;
 
-  const activity = session.thinking || session.statusLine || (session.running ? 'Working…' : '');
+  // The agent is blocked on a prompt this screen never showed, for example one raised during a drop.
+  const missedAnswer = session.waiting && !chat.state.prompts.some((prompt) => prompt.liveId === liveId);
+  const activity =
+    session.thinking ||
+    session.statusLine ||
+    (missedAnswer ? 'Waiting for an answer you did not see. Stop to cancel.' : session.running ? 'Working…' : '');
   const ready = pending.filter((item) => item.status === 'ready');
   const uploading = pending.some((item) => item.status === 'uploading');
   const failed = pending.some((item) => item.status === 'failed');
@@ -143,9 +148,10 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
     setDraft('');
     setPending([]);
     try {
-      // A rejected send keeps its "Not sent" bubble and gives the draft and files back.
-      const sent = await chat.submit(liveId, text, attachments);
-      if (!sent) {
+      // A send the gateway rejected keeps its "Not sent" bubble and gives the draft and files back.
+      // One that may have arrived keeps its bubble only, so the user does not send it twice.
+      const outcome = await chat.submit(liveId, text, attachments);
+      if (outcome === 'failed') {
         setDraft(text);
         setPending(ready);
       }
@@ -374,7 +380,7 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
 
       <Sheet visible={actionItem !== null} onClose={() => setActionItem(null)} title="Message">
         <Button label="Copy text" variant="secondary" onPress={() => void copy(actionItem)} />
-        {actionItem?.kind === 'user' && actionItem.failed ? (
+        {actionItem?.kind === 'user' && (actionItem.failed || actionItem.unknown) ? (
           <Button label="Send again" onPress={() => void retry(actionItem)} />
         ) : null}
         <Button label="Cancel" variant="ghost" onPress={() => setActionItem(null)} />
@@ -415,9 +421,11 @@ function ChatRow({ item, onLongPress, onRetry }: RowProps) {
               <Text style={{ color: tokens.text, fontSize: 15, lineHeight: 21 }}>{item.text}</Text>
             </Pressable>
           ) : null}
-          {item.failed ? (
+          {item.failed || item.unknown ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <Text style={{ color: tokens.danger, fontSize: 12 }}>Not sent.</Text>
+              <Text style={{ color: item.failed ? tokens.danger : tokens.textMuted, fontSize: 12 }}>
+                {item.failed ? 'Not sent.' : 'Not sure it was sent.'}
+              </Text>
               <Pressable onPress={() => onRetry(item)} accessibilityRole="button" accessibilityLabel="Send this message again" hitSlop={8}>
                 <Text style={{ color: tokens.accent, fontSize: 12, fontWeight: '600' }}>Retry</Text>
               </Pressable>

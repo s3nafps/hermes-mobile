@@ -12,7 +12,9 @@ import {
 } from './types';
 
 export type ChatItem =
-  | { kind: 'user'; id: string; text: string; failed?: boolean; attachments?: SentAttachment[] }
+  // failed: the gateway rejected the message, so it was not sent. unknown: the connection dropped
+  // before an answer, so it may or may not have reached the gateway.
+  | { kind: 'user'; id: string; text: string; failed?: boolean; unknown?: boolean; attachments?: SentAttachment[] }
   | { kind: 'assistant'; id: string; text: string; status: 'complete' | 'interrupted' | 'error'; usage?: Usage }
   | { kind: 'tool'; id: string; toolId: string; name: string; context: string; done: boolean; summary?: string; durationS?: number; risk?: string }
   | { kind: 'notice'; id: string; text: string; tone: 'info' | 'error' };
@@ -35,6 +37,8 @@ export type LiveSession = {
   statusLine: string;
   queued: string | null;
   lastError: string | null;
+  // The agent is waiting for an answer to a prompt this app may have missed (see hydrate).
+  waiting: boolean;
 };
 
 export type PromptKind = 'approval' | 'clarify' | 'sudo' | 'secret';
@@ -81,10 +85,13 @@ export type ChatAction =
       info: Partial<SessionInfo>;
       running: boolean;
       inflight: string | null;
+      inflightUser: string | null;
       queued: string | null;
+      waiting: boolean;
     }
   | { type: 'local_user'; liveId: string; id: string; text: string; attachments?: SentAttachment[] }
   | { type: 'user_failed'; liveId: string; id: string; message: string }
+  | { type: 'user_unknown'; liveId: string; id: string }
   | { type: 'queued'; liveId: string; text: string }
   | { type: 'remove_item'; liveId: string; id: string }
   | { type: 'drop_prompt'; id: string }
@@ -116,6 +123,7 @@ function blankSession(liveId: string): LiveSession {
     statusLine: '',
     queued: null,
     lastError: null,
+    waiting: false,
   };
 }
 
@@ -145,6 +153,18 @@ export function itemsFromWire(messages: WireMessage[]): ChatItem[] {
   });
 }
 
+// The user text the gateway already has for this session: its last few messages, plus the
+// turn that is running or queued. A send that dropped can be checked against it.
+function recentUserTexts(messages: WireMessage[], inflightUser: string | null, queued: string | null): string[] {
+  const stored = messages.slice(-6).flatMap((message) => (message.role === 'user' ? [message.text] : []));
+  return [...stored, ...(inflightUser ? [inflightUser] : []), ...(queued ? [queued] : [])];
+}
+
+// An unknown send is delivered once the gateway shows its text. A failed one never is.
+function deliveredAfterDrop(item: Extract<ChatItem, { kind: 'user' }>, gatewayTexts: string[]): boolean {
+  return Boolean(item.unknown) && item.text !== '' && gatewayTexts.some((text) => text.includes(item.text));
+}
+
 function sessionInfoPatch(session: LiveSession, info: Partial<SessionInfo>): LiveSession {
   return {
     ...session,
@@ -169,17 +189,25 @@ export function reduce(state: ChatState, action: ChatAction): ChatState {
   switch (action.type) {
     case 'hydrate': {
       const base = ensure(state, action.liveId);
+      const gatewayTexts = recentUserTexts(action.messages, action.inflightUser, action.queued);
+      // Sends still on screen are kept after a reconnect, so a failed or unsure message is not lost.
+      // An unsure one the gateway now shows has arrived, so it is dropped here.
+      const local = base.items.filter(
+        (item): item is Extract<ChatItem, { kind: 'user' }> =>
+          item.kind === 'user' && (Boolean(item.failed) || (Boolean(item.unknown) && !deliveredAfterDrop(item, gatewayTexts))),
+      );
       const next: LiveSession = {
         ...sessionInfoPatch(base, action.info),
         liveId: action.liveId,
         storedKey: action.storedKey ?? base.storedKey,
         running: action.running,
-        items: itemsFromWire(action.messages),
+        items: [...itemsFromWire(action.messages), ...local],
         streaming: action.inflight ?? '',
         thinking: '',
         statusLine: '',
         queued: action.queued,
         lastError: null,
+        waiting: action.waiting,
       };
       return put(state, next);
     }
@@ -197,6 +225,14 @@ export function reduce(state: ChatState, action: ChatAction): ChatState {
       );
       const notice: ChatItem = { kind: 'notice', id: itemId('n', 0), text: action.message, tone: 'error' };
       return put(state, { ...session, items: [...items, notice] });
+    }
+
+    case 'user_unknown': {
+      const session = ensure(state, action.liveId);
+      const items = session.items.map((item) =>
+        item.kind === 'user' && item.id === action.id ? { ...item, unknown: true } : item,
+      );
+      return put(state, { ...session, items });
     }
 
     case 'queued': {
@@ -264,14 +300,23 @@ function reduceEvent(state: ChatState, event: RpcEvent, now: number): ChatState 
       let next = sessionInfoPatch(session, info);
       if (typeof info.running === 'boolean') next = { ...next, running: info.running };
       if (info.running === false) {
-        next = { ...next, thinking: '', statusLine: '' };
+        next = { ...next, thinking: '', statusLine: '', waiting: false };
         return put({ ...state, prompts: prunePromptsFor(state.prompts, liveId) }, next);
       }
       return put(state, next);
     }
 
     case 'message.start':
-      return put(state, { ...session, running: true, streaming: '', thinking: '', statusLine: '', queued: null, lastError: null });
+      return put(state, {
+        ...session,
+        running: true,
+        streaming: '',
+        thinking: '',
+        statusLine: '',
+        queued: null,
+        lastError: null,
+        waiting: false,
+      });
 
     case 'message.delta':
       return put(state, { ...session, streaming: session.streaming + String(payload.text ?? '') });
@@ -304,6 +349,7 @@ function reduceEvent(state: ChatState, event: RpcEvent, now: number): ChatState 
         statusLine: '',
         usage,
         lastError: status === 'error' ? finalText : null,
+        waiting: false,
       });
       return notice ? reduce(next, { type: 'notice', notice }) : next;
     }
@@ -423,7 +469,7 @@ function reduceEvent(state: ChatState, event: RpcEvent, now: number): ChatState 
     case 'error': {
       const message = String(payload.message ?? 'Something went wrong.');
       const notice: Notice = { id: itemId('n', now), text: message, tone: 'error', storedKey: session.storedKey, at: now };
-      return reduce(put(state, { ...session, running: false, thinking: '', statusLine: '', lastError: message }), {
+      return reduce(put(state, { ...session, running: false, thinking: '', statusLine: '', lastError: message, waiting: false }), {
         type: 'notice',
         notice,
       });

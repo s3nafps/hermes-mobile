@@ -228,6 +228,10 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
           const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
           nearBottom.current = contentSize.height - contentOffset.y - layoutMeasurement.height < 80;
         }}
+        onScrollBeginDrag={() => {
+          // A drag means the reader is looking at earlier text, so stop following the reply.
+          nearBottom.current = false;
+        }}
         scrollEventThrottle={100}
         ListEmptyComponent={
           <EmptyState

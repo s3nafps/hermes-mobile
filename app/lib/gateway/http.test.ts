@@ -33,6 +33,13 @@ describe('isPlainHttpRisky', () => {
     expect(isPlainHttpRisky('http://203.0.113.7:9119')).toBe(true);
     expect(isPlainHttpRisky('http://100.128.0.1:9119')).toBe(true);
     expect(isPlainHttpRisky('http://hermes.local:9119')).toBe(true);
+    expect(isPlainHttpRisky('http://127.corp.example.com:9119')).toBe(true);
+    expect(isPlainHttpRisky('http://100.64.example.com:9119')).toBe(true);
+    expect(isPlainHttpRisky('http://100.63.255.255:9119')).toBe(true);
+  });
+
+  it('exempts Tailscale IPv6 addresses', () => {
+    expect(isPlainHttpRisky('http://[fd7a:115c:a1e0::1]:9119')).toBe(false);
   });
 });
 

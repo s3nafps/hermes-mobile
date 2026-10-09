@@ -95,7 +95,7 @@ export default function ConfigScreen() {
       const field = schema.data.fields[key];
       if (!field) continue;
       // A blank secret means "keep the current value", so it is not written.
-      if (isSecretKey(key) && String(value ?? '') === '') continue;
+      if (field.type === 'string' && isSecretKey(key) && String(value ?? '') === '') continue;
       next = setPath(next, key, coerceFieldValue(field, value, fieldLabel(field.description)));
     }
     unwrap(await http.PUT('/api/config', { body: { config: next } }));

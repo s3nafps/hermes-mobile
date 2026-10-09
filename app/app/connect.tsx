@@ -15,6 +15,7 @@ export default function ConnectScreen() {
   const [address, setAddress] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPlain, setConfirmPlain] = useState(false);
 
   const add = useAction(gateway.addGateway);
   const signIn = useAction(gateway.signIn);
@@ -37,30 +38,21 @@ export default function ConnectScreen() {
     await add.run(name, address);
   };
 
-  const sendSignIn = async (provider: string) => {
-    await signIn.run(provider, username.trim(), password);
-    setPassword('');
-  };
-
   const onSignIn = async () => {
     if (!passwordProvider) return;
     if (!username.trim() || !password) {
       Alert.alert('Sign in', 'Enter your username and password.');
       return;
     }
-    if (plainHttp) {
-      // A password over plain http can be read by other devices on the network, so ask first.
-      Alert.alert(
-        'Send password unencrypted?',
-        'This address uses plain http. Other devices on the same network could read your password. Use an https address or Tailscale instead.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Send anyway', style: 'destructive', onPress: () => void sendSignIn(passwordProvider.name) },
-        ],
-      );
+    // A password over plain http can be read by other devices on the network, so the user confirms
+    // first. The confirmation is part of the form, because native alerts do nothing on web.
+    if (plainHttp && !confirmPlain) {
+      setConfirmPlain(true);
       return;
     }
-    await sendSignIn(passwordProvider.name);
+    await signIn.run(passwordProvider.name, username.trim(), password);
+    setPassword('');
+    setConfirmPlain(false);
   };
 
   return (
@@ -107,7 +99,21 @@ export default function ConnectScreen() {
                   This address is not encrypted. Anything typed here can be read on the network. Use Tailscale or an https address.
                 </InlineNotice>
               ) : null}
-              <Button label="Sign in" onPress={onSignIn} loading={signIn.pending} disabled={busy} />
+              {confirmPlain ? (
+                <>
+                  <InlineNotice tone="danger">Other devices on the network could read this password. Send it anyway?</InlineNotice>
+                  <View style={{ flexDirection: 'row', gap: 10 }}>
+                    <View style={{ flex: 1 }}>
+                      <Button label="Cancel" variant="secondary" onPress={() => setConfirmPlain(false)} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Button label="Send anyway" onPress={onSignIn} loading={signIn.pending} disabled={busy} />
+                    </View>
+                  </View>
+                </>
+              ) : (
+                <Button label="Sign in" onPress={onSignIn} loading={signIn.pending} disabled={busy} />
+              )}
             </>
           ) : (
             <InlineNotice tone="warning">

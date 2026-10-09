@@ -20,6 +20,8 @@ export type ChatApi = {
   setTitle: (liveId: string, title: string) => Promise<void>;
   closeSession: (liveId: string) => Promise<void>;
   dismissNotice: (id: string) => void;
+  // Removes one message from the conversation on screen, for example a failed send before a retry.
+  dropItem: (liveId: string, id: string) => void;
 };
 
 const ChatContext = createContext<ChatApi | null>(null);
@@ -216,6 +218,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   );
 
   const dismissNotice = useCallback((id: string) => dispatch({ type: 'dismiss_notice', id }), []);
+  const dropItem = useCallback((liveId: string, id: string) => dispatch({ type: 'remove_item', liveId, id }), []);
 
   const value = useMemo<ChatApi>(
     () => ({
@@ -231,6 +234,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setTitle,
       closeSession,
       dismissNotice,
+      dropItem,
     }),
     [
       state,
@@ -245,6 +249,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setTitle,
       closeSession,
       dismissNotice,
+      dropItem,
     ],
   );
 

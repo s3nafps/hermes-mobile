@@ -1,5 +1,7 @@
 import type { RpcEvent } from '@/lib/gateway/rpc';
 
+import { userVisibleText } from './userText';
+
 import {
   PROMPT_WINDOW_MS,
   type ApprovalChoice,
@@ -84,6 +86,7 @@ export type ChatAction =
   | { type: 'local_user'; liveId: string; id: string; text: string; attachments?: SentAttachment[] }
   | { type: 'user_failed'; liveId: string; id: string; message: string }
   | { type: 'queued'; liveId: string; text: string }
+  | { type: 'remove_item'; liveId: string; id: string }
   | { type: 'drop_prompt'; id: string }
   | { type: 'drop_session'; liveId: string }
   | { type: 'notice'; notice: Notice }
@@ -132,7 +135,8 @@ function itemId(prefix: string, now: number): string {
 export function itemsFromWire(messages: WireMessage[]): ChatItem[] {
   return messages.map((message, index) => {
     const id = `h${index}`;
-    if (message.role === 'user') return { kind: 'user', id, text: message.text };
+    // Stored user text carries the file context the agent read. Show only what was typed.
+    if (message.role === 'user') return { kind: 'user', id, text: userVisibleText(message.text) };
     if (message.role === 'assistant') return { kind: 'assistant', id, text: message.text, status: 'complete' };
     if (message.role === 'tool') {
       return { kind: 'tool', id, toolId: id, name: message.name, context: message.context, done: true };
@@ -197,6 +201,11 @@ export function reduce(state: ChatState, action: ChatAction): ChatState {
 
     case 'queued': {
       return put(state, { ...ensure(state, action.liveId), queued: action.text });
+    }
+
+    case 'remove_item': {
+      const session = ensure(state, action.liveId);
+      return put(state, { ...session, items: session.items.filter((item) => item.id !== action.id) });
     }
 
     case 'drop_prompt':

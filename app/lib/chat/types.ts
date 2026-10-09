@@ -40,7 +40,8 @@ export type SessionInfo = {
 
 // A photo or file sent with a chat message. refText is the reference the agent reads
 // for a file; images are attached to the session and need no reference in the text.
-export type SentAttachment = { name: string; kind: 'image' | 'file'; refText?: string };
+// previewUri is this device's copy of a photo, for the thumbnail. It is not sent or stored.
+export type SentAttachment = { name: string; kind: 'image' | 'file'; refText?: string; previewUri?: string };
 
 // How long the server keeps each kind of prompt open before it gives up.
 // Approvals have no expire event, so the app hides them when the window closes.

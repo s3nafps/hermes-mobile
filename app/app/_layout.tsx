@@ -64,6 +64,7 @@ function Gate() {
         screenOptions={{
           headerStyle: { backgroundColor: tokens.bg },
           headerTintColor: tokens.text,
+          headerTitleStyle: { color: tokens.text },
           headerShadowVisible: false,
           contentStyle: { backgroundColor: tokens.bg },
         }}>

@@ -221,5 +221,5 @@ function stringOrNull(value: unknown): string | null {
 }
 
 const styles = themed(() => StyleSheet.create({
-  note: { color: tokens.textMuted, fontSize: 12, lineHeight: 18 },
+  note: { color: tokens.textMuted, fontSize: 13, lineHeight: 18 },
 }));

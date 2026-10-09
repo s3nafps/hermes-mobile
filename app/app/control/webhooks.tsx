@@ -182,6 +182,6 @@ export default function WebhooksScreen() {
 }
 
 const styles = themed(() => StyleSheet.create({
-  noticeText: { color: tokens.text, fontSize: 14, lineHeight: 20 },
+  noticeText: { color: tokens.text, fontSize: 15, lineHeight: 21 },
   noticeActions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
 }));

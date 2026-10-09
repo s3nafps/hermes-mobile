@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Alert, Platform, StyleSheet, Text } from 'react-native';
+import { Alert, StyleSheet, Text } from 'react-native';
 
 import { untyped } from '@/components/control/client';
 import { ConfigField } from '@/components/control/ConfigField';
@@ -27,11 +27,9 @@ import {
   Section,
   Sheet,
 } from '@/components/ui';
-import { tokens } from '@/constants/tokens';
+import { MONO, tokens } from '@/constants/tokens';
 import { unwrap, useAction, useGateway, useGatewayQuery } from '@/lib/gateway';
 import { themed } from '@/lib/theme';
-
-const MONO = Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' });
 
 // The gateway config as a form. Fields come from the config schema. Edits stay on this
 // screen until Save, which sends the whole config back to the gateway.
@@ -247,6 +245,6 @@ export default function ConfigScreen() {
 }
 
 const styles = themed(() => StyleSheet.create({
-  path: { color: tokens.textMuted, fontSize: 12 },
-  raw: { color: tokens.text, fontFamily: MONO, fontSize: 12, lineHeight: 17 },
+  path: { color: tokens.textMuted, fontFamily: MONO, fontSize: 13 },
+  raw: { color: tokens.text, fontFamily: MONO, fontSize: 13, lineHeight: 18 },
 }));

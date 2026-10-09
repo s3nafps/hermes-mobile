@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 import { Stack } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Platform, StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 
 import { confirmAction } from '@/components/control/confirm';
 import { untyped } from '@/components/control/client';
@@ -20,12 +20,11 @@ import {
   Segmented,
   Sheet,
 } from '@/components/ui';
-import { tokens } from '@/constants/tokens';
+import { MONO, tokens } from '@/constants/tokens';
 import { unwrap, useAction, useGateway, useGatewayQuery } from '@/lib/gateway';
 import { messageOf } from '@/lib/gateway/hooks';
 import { themed, useTheme } from '@/lib/theme';
 
-const MONO = Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' });
 const MAX_OUTPUT = 4000;
 
 // App-level settings: the gateway in use, the dashboard theme, updates, maintenance and sign out.
@@ -220,5 +219,5 @@ export default function SettingsScreen() {
 }
 
 const styles = themed(() => StyleSheet.create({
-  output: { color: tokens.text, fontFamily: MONO, fontSize: 12, lineHeight: 17 },
+  output: { color: tokens.text, fontFamily: MONO, fontSize: 13, lineHeight: 18 },
 }));

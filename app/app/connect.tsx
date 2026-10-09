@@ -68,7 +68,7 @@ export default function ConnectScreen() {
 
       {gateway.phase === 'error' && gateway.error ? (
         <Card tone="danger" style={{ gap: 10 }}>
-          <Text style={{ color: tokens.text, fontSize: 14, lineHeight: 20 }}>{gateway.error}</Text>
+          <Text style={{ color: tokens.text, fontSize: 15, lineHeight: 21 }}>{gateway.error}</Text>
           <Button label="Try again" variant="secondary" compact onPress={() => void gateway.connect()} />
         </Card>
       ) : null}

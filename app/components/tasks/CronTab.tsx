@@ -95,5 +95,5 @@ export function CronTab() {
 const styles = themed(() => StyleSheet.create({
   list: { gap: 12 },
   actions: { flexDirection: 'row' },
-  hint: { color: tokens.textMuted, fontSize: 12 },
+  hint: { color: tokens.textMuted, fontSize: 13 },
 }));

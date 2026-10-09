@@ -52,7 +52,7 @@ export default function TabLayout() {
     <View style={{ flex: 1, backgroundColor: tokens.bg }} {...swipe.panHandlers}>
       <ConnectionBanner />
       <Tabs
-        screenOptions={{ headerShown: false }}
+        screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: tokens.bg } }}
         tabBar={(props) => (
           <PillTabBar {...props} keyboardHeight={keyboardHeight} lift={FLOATING_LIFT} />
         )}>

@@ -102,15 +102,14 @@ const styles = themed(() => StyleSheet.create({
   },
   code: {
     gap: 6,
-    padding: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: tokens.line,
-    backgroundColor: tokens.bg,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: tokens.well,
   },
   language: {
     color: tokens.textMuted,
-    fontSize: 11,
+    fontFamily: MONO,
+    fontSize: 13,
   },
   codeText: {
     color: tokens.text,
@@ -122,15 +121,15 @@ const styles = themed(() => StyleSheet.create({
     color: tokens.text,
     fontFamily: MONO,
     fontSize: 14,
-    backgroundColor: tokens.bg,
+    backgroundColor: tokens.well,
   },
   link: {
-    color: tokens.info,
+    color: tokens.atext,
     textDecorationLine: 'underline',
   },
   quote: {
-    paddingLeft: 10,
-    borderLeftWidth: 3,
+    paddingLeft: 12,
+    borderLeftWidth: 2,
     borderLeftColor: tokens.accent,
   },
 }));

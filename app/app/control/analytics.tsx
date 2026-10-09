@@ -118,5 +118,5 @@ export default function AnalyticsScreen() {
 const styles = themed(() => StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   caption: { color: tokens.textMuted, fontSize: 13, marginTop: -8 },
-  note: { color: tokens.textMuted, fontSize: 12, lineHeight: 18 },
+  note: { color: tokens.textMuted, fontSize: 13, lineHeight: 18 },
 }));

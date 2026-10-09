@@ -1,6 +1,6 @@
 import { Stack, router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { Alert, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, Text, TextInput, View } from 'react-native';
 
 import { tokens } from '@/constants/tokens';
 import { useGateway } from '@/lib/gateway';
@@ -85,7 +85,7 @@ export default function SessionsScreen() {
               height: 44,
               borderWidth: 1,
               borderColor: tokens.line,
-              borderRadius: 12,
+              borderRadius: 14,
               backgroundColor: tokens.surface,
               color: tokens.text,
               paddingHorizontal: 14,
@@ -112,13 +112,13 @@ export default function SessionsScreen() {
                   last={index === sessions.length - 1}
                   onPress={() => router.push(`/chat/${encodeURIComponent(session.id)}`)}
                   right={
-                    <Text
+                    <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={`Delete ${session.title || 'chat'}`}
                       onPress={() => confirmDelete(session)}
-                      style={{ color: tokens.danger, fontSize: 13, paddingLeft: 8 }}>
-                      Delete
-                    </Text>
+                      style={{ minHeight: 44, justifyContent: 'center', paddingLeft: 8 }}>
+                      <Text style={{ color: tokens.danger, fontSize: 13 }}>Delete</Text>
+                    </Pressable>
                   }
                 />
               ))}

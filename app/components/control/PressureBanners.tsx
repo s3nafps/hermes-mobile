@@ -1,4 +1,7 @@
-import { InlineNotice } from '@/components/ui';
+import { StyleSheet, Text, View } from 'react-native';
+
+import { tokens } from '@/constants/tokens';
+import { themed } from '@/lib/theme';
 
 import { percent } from './format';
 import type { SystemStats } from './types';
@@ -22,13 +25,26 @@ export function PressureBanners({ stats }: Props) {
     <>
       {items.map((item) => {
         if (typeof item.value !== 'number' || item.value < WARN_AT) return null;
-        const tone = item.value >= DANGER_AT ? 'danger' : 'warning';
+        const color = item.value >= DANGER_AT ? tokens.danger : tokens.warn;
         return (
-          <InlineNotice key={item.name} tone={tone}>
-            {`${item.name} is at ${percent(item.value)} on the gateway host. ${item.hint}`}
-          </InlineNotice>
+          <View key={item.name} style={[styles.banner, { borderColor: color }]}>
+            <View style={[styles.edge, { backgroundColor: color }]} />
+            <Text style={styles.text}>{`${item.name} is at ${percent(item.value)} on the gateway host. ${item.hint}`}</Text>
+          </View>
         );
       })}
     </>
   );
 }
+
+const styles = themed(() => StyleSheet.create({
+  banner: {
+    flexDirection: 'row',
+    backgroundColor: tokens.surface,
+    borderWidth: 1,
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+  edge: { width: 4 },
+  text: { flex: 1, color: tokens.text, fontSize: 15, lineHeight: 21, padding: 14 },
+}));

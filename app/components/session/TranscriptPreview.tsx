@@ -49,7 +49,7 @@ export function TranscriptPreview({ lines, loading, error, onRetry, pageSize }: 
 const styles = themed(() => StyleSheet.create({
   line: { paddingHorizontal: 14, paddingVertical: 10, gap: 4 },
   lineDivider: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: tokens.line },
-  speaker: { color: tokens.textMuted, fontSize: 12, fontWeight: '600' },
-  text: { color: tokens.text, fontSize: 14, lineHeight: 20 },
+  speaker: { color: tokens.textMuted, fontSize: 13, fontWeight: '600' },
+  text: { color: tokens.text, fontSize: 15, lineHeight: 21 },
   more: { color: tokens.textMuted, fontSize: 13 },
 }));

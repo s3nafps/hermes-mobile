@@ -1,16 +1,14 @@
 import { useState } from 'react';
-import { Platform, StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 import { requireHttp } from '@/components/bots/shared';
 import { Button, ErrorState, Field, InlineNotice, LoadingState, Sheet } from '@/components/ui';
-import { tokens } from '@/constants/tokens';
+import { MONO, tokens } from '@/constants/tokens';
 import { useAction, useGateway, useGatewayQuery } from '@/lib/gateway';
 
 import { getSkillContent, saveSkillContent } from './api';
 import type { InstalledSkill } from './types';
 import { themed } from '@/lib/theme';
-
-const MONO = Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' });
 
 type Props = {
   skill: InstalledSkill | null;

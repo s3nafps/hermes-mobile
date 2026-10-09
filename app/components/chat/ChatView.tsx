@@ -10,13 +10,15 @@ import { Markdown } from '@/components/chat/Markdown';
 import { ModelSheet } from '@/components/chat/ModelSheet';
 import { useKeyboardHeight } from '@/components/navigation/useKeyboardHeight';
 import { Badge, Button, EmptyState, InlineNotice, LoadingState, Sheet, StatusDot } from '@/components/ui';
-import { MONO, tokens } from '@/constants/tokens';
+import { MONO, lift, tokens } from '@/constants/tokens';
 import { useChat } from '@/lib/chat/ChatProvider';
 import { livePrompts, type ChatItem } from '@/lib/chat/reducer';
 import { useGateway } from '@/lib/gateway';
 import { messageOf } from '@/lib/gateway/hooks';
 
 const ATTACH_ICON = { ios: 'paperclip', android: 'attach_file', web: 'attach_file' } as const;
+const DETAILS_ICON = { ios: 'info.circle', android: 'info', web: 'info' } as const;
+const TOOL_ICON = { ios: 'gearshape', android: 'settings', web: 'settings' } as const;
 
 // Right-hand space the composer leaves while the floating tab button sits above the keyboard:
 // the button's inset (16), its width (52) and a gap (8). The button then never covers Send.
@@ -85,6 +87,8 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
     session.thinking ||
     session.statusLine ||
     (missedAnswer ? 'Waiting for an answer you did not see. Stop to cancel.' : session.running ? 'Working…' : '');
+  // The waiting banner replaces the plain activity line while the agent waits on an answer this screen missed.
+  const waitingBanner = missedAnswer && !session.thinking && !session.statusLine;
   const ready = pending.filter((item) => item.status === 'ready');
   const uploading = pending.some((item) => item.status === 'uploading');
   const failed = pending.some((item) => item.status === 'failed');
@@ -192,24 +196,33 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={keyboardOffset}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: tokens.line }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 4, paddingBottom: 8 }}>
         <Pressable
           onPress={() => setModelOpen(true)}
           accessibilityRole="button"
           accessibilityLabel="Choose model and reasoning"
-          style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          style={{ flex: 1, minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Text numberOfLines={1} style={{ color: tokens.textMuted, fontSize: 13, flexShrink: 1 }}>
             {session.model || 'Choose a model'}
           </Text>
-          <Text style={{ color: tokens.accent, fontSize: 13 }}>Change</Text>
+          <Text style={{ color: tokens.atext, fontSize: 13, fontWeight: '600' }}>Change</Text>
         </Pressable>
         {storedKey ? (
           <Pressable
             onPress={() => router.push(`/session/${encodeURIComponent(storedKey)}`)}
             accessibilityRole="link"
             accessibilityLabel="Open chat details"
-            style={{ paddingVertical: 4 }}>
-            <Text style={{ color: tokens.accent, fontSize: 13, fontWeight: '600' }}>Details</Text>
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              borderWidth: 1,
+              borderColor: tokens.line,
+              backgroundColor: tokens.surface,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <SymbolView name={DETAILS_ICON} tintColor={tokens.text} size={20} />
           </Pressable>
         ) : null}
       </View>
@@ -228,7 +241,7 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
         ref={listRef}
         data={data}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: 16, gap: 12, flexGrow: 1 }}
+        contentContainerStyle={{ padding: 16, gap: 14, flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
         onScroll={(event) => {
           const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
@@ -249,13 +262,53 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
           <ChatRow
             item={item}
             onLongPress={setActionItem}
+            onCopy={(reply) => void copy(reply)}
             onRetry={(user) => void retry(user)}
             onDismiss={(user) => chat.dropItem(liveId, user.id)}
           />
         )}
       />
 
-      {activity ? (
+      {waitingBanner ? (
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            marginHorizontal: 16,
+            marginBottom: 8,
+            paddingLeft: 16,
+            paddingRight: 4,
+            paddingVertical: 4,
+            minHeight: 52,
+            borderRadius: 26,
+            borderWidth: 1,
+            borderColor: tokens.warn,
+            backgroundColor: tokens.surface,
+          }}>
+          <Text numberOfLines={2} style={{ color: tokens.warnText, fontSize: 13, flex: 1 }}>
+            {activity}
+          </Text>
+          {session.running && !canStop ? (
+            <Pressable
+              onPress={() => void stop()}
+              accessibilityRole="button"
+              accessibilityLabel="Stop the reply"
+              style={{
+                minWidth: 44,
+                height: 44,
+                paddingHorizontal: 14,
+                borderRadius: 22,
+                borderWidth: 1,
+                borderColor: tokens.danger,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Text style={{ color: tokens.danger, fontSize: 13, fontWeight: '600' }}>Stop</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : activity ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingBottom: 6 }}>
           <StatusDot tone={session.running ? 'running' : 'neutral'} />
           <Text numberOfLines={1} style={{ color: tokens.textMuted, fontSize: 13, flex: 1 }}>
@@ -263,7 +316,11 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
           </Text>
           {session.running && !canStop ? (
             // The composer shows Queue while there is text, so Stop lives here, always in reach.
-            <Pressable onPress={() => void stop()} accessibilityRole="button" accessibilityLabel="Stop the reply" hitSlop={8}>
+            <Pressable
+              onPress={() => void stop()}
+              accessibilityRole="button"
+              accessibilityLabel="Stop the reply"
+              style={{ minWidth: 44, minHeight: 44, justifyContent: 'center', alignItems: 'flex-end' }}>
               <Text style={{ color: tokens.danger, fontSize: 13, fontWeight: '600' }}>Stop</Text>
             </Pressable>
           ) : null}
@@ -271,7 +328,7 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
       ) : null}
 
       {session.queued ? (
-        <Text numberOfLines={1} style={{ color: tokens.textMuted, fontSize: 12, paddingHorizontal: 16, paddingBottom: 6 }}>
+        <Text numberOfLines={1} style={{ color: tokens.textMuted, fontSize: 13, paddingHorizontal: 16, paddingBottom: 6 }}>
           Queued next: {session.queued}
         </Text>
       ) : null}
@@ -285,12 +342,11 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
       <View
         style={{
           gap: 8,
-          padding: 10,
-          paddingRight: keyboardHeight > 0 ? FLOATING_BUTTON_GUTTER : 10,
+          paddingHorizontal: 12,
+          paddingTop: 6,
+          paddingRight: keyboardHeight > 0 ? FLOATING_BUTTON_GUTTER : 12,
           paddingBottom: Platform.OS === 'ios' ? 22 : 10,
-          borderTopWidth: 1,
-          borderTopColor: tokens.line,
-          backgroundColor: tokens.surface,
+          backgroundColor: tokens.bg,
         }}>
         {pending.length > 0 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 8 }}>
@@ -308,10 +364,22 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
           </ScrollView>
         ) : null}
         {failed ? (
-          <Text style={{ color: tokens.danger, fontSize: 12 }}>Remove the file that could not be attached to send.</Text>
+          <Text style={{ color: tokens.danger, fontSize: 13, paddingHorizontal: 4 }}>Remove the file that could not be attached to send.</Text>
         ) : null}
 
-        <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'flex-end',
+            gap: 6,
+            minHeight: 62,
+            padding: 9,
+            borderRadius: 31,
+            borderWidth: 1,
+            borderColor: tokens.line,
+            backgroundColor: tokens.surface,
+            ...lift('float'),
+          }}>
           <Pressable
             onPress={() => setAttachOpen(true)}
             disabled={sending}
@@ -320,12 +388,10 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
             style={{
               width: 44,
               height: 44,
-              borderRadius: 14,
-              borderWidth: 1,
-              borderColor: '#3A4150',
+              borderRadius: 22,
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: tokens.bg,
+              backgroundColor: tokens.well,
               opacity: sending ? 0.5 : 1,
             }}>
             <SymbolView name={ATTACH_ICON} tintColor={tokens.textMuted} size={22} />
@@ -341,13 +407,9 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
               flex: 1,
               maxHeight: 140,
               minHeight: 44,
-              borderWidth: 1,
-              borderColor: '#3A4150',
-              borderRadius: 14,
-              paddingHorizontal: 14,
+              paddingHorizontal: 8,
               paddingVertical: 10,
               color: tokens.text,
-              backgroundColor: tokens.bg,
               fontSize: 16,
             }}
           />
@@ -356,8 +418,16 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
               onPress={() => void stop()}
               accessibilityRole="button"
               accessibilityLabel="Stop the reply"
-              style={{ height: 44, paddingHorizontal: 16, borderRadius: 14, borderWidth: 1, borderColor: tokens.danger, justifyContent: 'center' }}>
-              <Text style={{ color: tokens.danger, fontWeight: '600' }}>Stop</Text>
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                borderWidth: 1,
+                borderColor: tokens.danger,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Text style={{ color: tokens.danger, fontSize: 13, fontWeight: '600' }}>Stop</Text>
             </Pressable>
           ) : (
             <Pressable
@@ -367,13 +437,15 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
               accessibilityLabel="Send"
               style={{
                 height: 44,
+                minWidth: 44,
                 paddingHorizontal: 18,
-                borderRadius: 14,
+                borderRadius: 22,
                 backgroundColor: tokens.accent,
+                alignItems: 'center',
                 justifyContent: 'center',
                 opacity: canSend ? 1 : 0.5,
               }}>
-              <Text style={{ color: tokens.accentText, fontWeight: '600' }}>{session.running ? 'Queue' : 'Send'}</Text>
+              <Text style={{ color: tokens.accentText, fontSize: 15, fontWeight: '600' }}>{session.running ? 'Queue' : 'Send'}</Text>
             </Pressable>
           )}
         </View>
@@ -399,15 +471,16 @@ export function ChatView({ liveId, keyboardOffset = 88 }: { liveId: string; keyb
 type RowProps = {
   item: ChatItem;
   onLongPress: (item: ChatItem) => void;
+  onCopy: (item: ChatItem) => void;
   onRetry: (item: UserItem) => void;
   onDismiss: (item: UserItem) => void;
 };
 
-function ChatRow({ item, onLongPress, onRetry, onDismiss }: RowProps) {
+function ChatRow({ item, onLongPress, onCopy, onRetry, onDismiss }: RowProps) {
   switch (item.kind) {
     case 'user':
       return (
-        <View style={{ alignSelf: 'flex-end', maxWidth: '84%', gap: 6, alignItems: 'flex-end' }}>
+        <View style={{ alignSelf: 'flex-end', maxWidth: '82%', gap: 6, alignItems: 'flex-end' }}>
           {item.attachments?.length ? (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, justifyContent: 'flex-end' }}>
               {item.attachments.map((attachment, index) => (
@@ -425,26 +498,39 @@ function ChatRow({ item, onLongPress, onRetry, onDismiss }: RowProps) {
               onLongPress={() => onLongPress(item)}
               delayLongPress={350}
               accessibilityHint="Long press for copy and other actions"
-              style={{ backgroundColor: tokens.surfaceRaised, borderRadius: 16, borderBottomRightRadius: 4, paddingHorizontal: 14, paddingVertical: 10 }}>
-              <Text style={{ color: tokens.text, fontSize: 15, lineHeight: 21 }}>{item.text}</Text>
+              style={{
+                backgroundColor: tokens.tint,
+                borderWidth: 1,
+                borderColor: item.failed ? tokens.danger : tokens.tint,
+                borderRadius: 18,
+                borderBottomRightRadius: 6,
+                paddingHorizontal: 14,
+                paddingVertical: 10,
+                opacity: item.pending ? 0.7 : 1,
+              }}>
+              <Text style={{ color: tokens.text, fontSize: 15, lineHeight: 22 }}>{item.text}</Text>
             </Pressable>
           ) : null}
-          {item.pending ? <Text style={{ color: tokens.textMuted, fontSize: 12 }}>Sending…</Text> : null}
+          {item.pending ? <Text style={{ color: tokens.textMuted, fontSize: 13 }}>Sending…</Text> : null}
           {item.failed || item.unknown ? (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <Text style={{ color: item.failed ? tokens.danger : tokens.textMuted, fontSize: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              <Text style={{ color: item.failed ? tokens.danger : tokens.warnText, fontSize: 13, paddingLeft: 4 }}>
                 {item.failed ? 'Not sent.' : 'Not sure it was sent.'}
               </Text>
-              <Pressable onPress={() => onRetry(item)} accessibilityRole="button" accessibilityLabel="Send this message again" hitSlop={8}>
-                <Text style={{ color: tokens.accent, fontSize: 12, fontWeight: '600' }}>{item.failed ? 'Retry' : 'Send again'}</Text>
+              <Pressable
+                onPress={() => onRetry(item)}
+                accessibilityRole="button"
+                accessibilityLabel="Send this message again"
+                style={{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 10 }}>
+                <Text style={{ color: tokens.atext, fontSize: 13, fontWeight: '600' }}>{item.failed ? 'Retry' : 'Send again'}</Text>
               </Pressable>
               {item.unknown ? (
                 <Pressable
                   onPress={() => onDismiss(item)}
                   accessibilityRole="button"
                   accessibilityLabel="It was already sent. Remove this copy"
-                  hitSlop={8}>
-                  <Text style={{ color: tokens.accent, fontSize: 12, fontWeight: '600' }}>It was sent</Text>
+                  style={{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 10 }}>
+                  <Text style={{ color: tokens.textMuted, fontSize: 13, fontWeight: '600' }}>It was sent</Text>
                 </Pressable>
               ) : null}
             </View>
@@ -453,33 +539,34 @@ function ChatRow({ item, onLongPress, onRetry, onDismiss }: RowProps) {
       );
     case 'assistant':
       return (
-        <Pressable onLongPress={() => onLongPress(item)} delayLongPress={350} style={{ maxWidth: '96%', gap: 6 }}>
-          <Markdown source={item.text} />
-          {item.status === 'error' ? <Badge label="Failed" tone="danger" /> : null}
-          {item.status === 'interrupted' ? <Badge label="Stopped" tone="accent" /> : null}
-        </Pressable>
-      );
-    case 'tool':
-      return (
-        <View style={{ backgroundColor: tokens.bg, borderWidth: 1, borderColor: tokens.line, borderRadius: 12, padding: 12, gap: 6 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <StatusDot tone={item.done ? 'done' : 'running'} />
-            <Text style={{ color: tokens.text, fontFamily: MONO, fontSize: 13, flex: 1 }} numberOfLines={1}>
-              {item.name}
-            </Text>
-            <Text style={{ color: tokens.textMuted, fontSize: 12 }}>
-              {item.done ? (item.durationS !== undefined ? `Done · ${item.durationS.toFixed(1)}s` : 'Done') : 'Running'}
-            </Text>
-          </View>
-          {item.context ? (
-            <Text style={{ color: tokens.textMuted, fontFamily: MONO, fontSize: 12 }} numberOfLines={2}>
-              {item.context}
-            </Text>
-          ) : null}
-          {item.summary ? <Text style={{ color: tokens.text, fontSize: 12 }} numberOfLines={3}>{item.summary}</Text> : null}
-          {item.risk ? <Badge label={`Risk: ${item.risk}`} tone="danger" /> : null}
+        <View style={{ gap: 8 }}>
+          <Pressable onLongPress={() => onLongPress(item)} delayLongPress={350} style={{ gap: 8 }}>
+            <Markdown source={item.text} />
+            {item.status === 'error' ? <Badge label="Failed" tone="danger" /> : null}
+            {item.status === 'interrupted' ? <Badge label="Stopped" tone="accent" /> : null}
+          </Pressable>
+          {item.id === 'streaming' ? null : (
+            <Pressable
+              onPress={() => onCopy(item)}
+              accessibilityRole="button"
+              accessibilityLabel="Copy text"
+              style={{
+                alignSelf: 'flex-start',
+                minHeight: 44,
+                justifyContent: 'center',
+                paddingHorizontal: 18,
+                borderRadius: 22,
+                borderWidth: 1,
+                borderColor: tokens.line,
+                backgroundColor: tokens.surface,
+              }}>
+              <Text style={{ color: tokens.text, fontSize: 13, fontWeight: '600' }}>Copy</Text>
+            </Pressable>
+          )}
         </View>
       );
+    case 'tool':
+      return <ToolRow item={item} />;
     case 'notice':
       return (
         <Text style={{ color: item.tone === 'error' ? tokens.danger : tokens.textMuted, fontSize: 13, textAlign: 'center' }}>
@@ -489,4 +576,72 @@ function ChatRow({ item, onLongPress, onRetry, onDismiss }: RowProps) {
     default:
       return null;
   }
+}
+
+type ToolItem = Extract<ChatItem, { kind: 'tool' }>;
+
+// One tool call as a card row. While it runs, its chip counts the seconds since the row appeared.
+function ToolRow({ item }: { item: ToolItem }) {
+  const [startedAt] = useState(() => Date.now());
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (item.done) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [item.done]);
+  const elapsed = Math.max(0, Math.floor((now - startedAt) / 1000));
+  const status = item.done
+    ? item.durationS !== undefined
+      ? `Done · ${item.durationS.toFixed(1)}s`
+      : 'Done'
+    : `Running · ${elapsed}s`;
+
+  return (
+    <View
+      style={{
+        minHeight: 48,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 22,
+        borderWidth: 1,
+        borderColor: tokens.line,
+        backgroundColor: tokens.surface,
+        ...lift('card'),
+      }}>
+      <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: tokens.well, alignItems: 'center', justifyContent: 'center' }}>
+        <SymbolView name={TOOL_ICON} tintColor={tokens.textMuted} size={16} />
+      </View>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={{ color: tokens.text, fontFamily: MONO, fontSize: 13 }} numberOfLines={1}>
+          {item.name}
+        </Text>
+        {item.context ? (
+          <Text style={{ color: tokens.textMuted, fontFamily: MONO, fontSize: 13 }} numberOfLines={2}>
+            {item.context}
+          </Text>
+        ) : null}
+        {item.summary ? (
+          <Text style={{ color: tokens.text, fontSize: 13 }} numberOfLines={3}>
+            {item.summary}
+          </Text>
+        ) : null}
+        {item.risk ? <Badge label={`Risk: ${item.risk}`} tone="danger" /> : null}
+      </View>
+      <View
+        style={{
+          alignSelf: 'flex-start',
+          paddingHorizontal: 10,
+          paddingVertical: 4,
+          borderRadius: 999,
+          backgroundColor: item.done ? tokens.well : tokens.tint,
+        }}>
+        <Text numberOfLines={1} style={{ color: item.done ? tokens.textMuted : tokens.atext, fontFamily: MONO, fontSize: 13 }}>
+          {status}
+        </Text>
+      </View>
+    </View>
+  );
 }

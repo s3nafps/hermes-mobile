@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Badge, Button, Card, Toggle } from '@/components/ui';
-import { tokens } from '@/constants/tokens';
+import { MONO, tokens } from '@/constants/tokens';
 
 import { formatWhen, labelFor, toneFor } from './format';
 import type { CronJob } from './types';
@@ -37,9 +37,12 @@ export function CronJobCard({ job, deliverLabel, busy, onOpen, onToggle, onRunNo
         </View>
         <Text style={styles.meta}>{job.scheduleLabel || 'No schedule'}</Text>
         <Text style={styles.meta}>Delivers to {deliverLabel}</Text>
-        <Text style={styles.meta}>Last run: {formatWhen(job.lastRunAt, 'never')}</Text>
         <Text style={styles.meta}>
-          Next run: {job.enabled ? formatWhen(job.nextRunAt, 'not scheduled') : 'paused'}
+          Last run: <Text style={styles.mono}>{formatWhen(job.lastRunAt, 'never')}</Text>
+        </Text>
+        <Text style={styles.meta}>
+          Next run:{' '}
+          {job.enabled ? <Text style={styles.mono}>{formatWhen(job.nextRunAt, 'not scheduled')}</Text> : 'paused'}
         </Text>
         {job.lastError ? (
           <Text style={styles.error} numberOfLines={3}>
@@ -69,6 +72,7 @@ const styles = themed(() => StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 },
   name: { flex: 1, color: tokens.text, fontSize: 16, fontWeight: '600' },
   meta: { color: tokens.textMuted, fontSize: 13, lineHeight: 18 },
+  mono: { fontFamily: MONO },
   error: { color: tokens.danger, fontSize: 13, lineHeight: 18, marginTop: 2 },
   footer: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 },
   spacer: { flexGrow: 1 },

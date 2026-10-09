@@ -128,6 +128,6 @@ export default function ArtifactsScreen() {
 }
 
 const styles = themed(() => StyleSheet.create({
-  label: { color: tokens.textMuted, fontSize: 12, fontWeight: '600', letterSpacing: 0.6 },
+  label: { color: tokens.textMuted, fontSize: 13, fontWeight: '600', letterSpacing: 0.6 },
   folder: { color: tokens.text, fontFamily: MONO, fontSize: 13 },
 }));

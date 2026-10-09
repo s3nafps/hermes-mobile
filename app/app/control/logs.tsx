@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 import { useState } from 'react';
-import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { untyped } from '@/components/control/client';
 import type { LogsResponse } from '@/components/control/types';
@@ -16,7 +16,7 @@ import {
   Segmented,
   Toggle,
 } from '@/components/ui';
-import { tokens } from '@/constants/tokens';
+import { MONO, tokens } from '@/constants/tokens';
 import { useGateway, useGatewayQuery } from '@/lib/gateway';
 import { themed } from '@/lib/theme';
 
@@ -43,8 +43,6 @@ const LINES: { value: LineCount; label: string }[] = [
   { value: '200', label: '200' },
   { value: '500', label: '500' },
 ];
-
-const MONO = Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' });
 
 // Recent log lines from the gateway, with filters and an optional auto-refresh.
 export default function LogsScreen() {
@@ -116,8 +114,8 @@ const styles = themed(() => StyleSheet.create({
   logText: {
     color: tokens.text,
     fontFamily: MONO,
-    fontSize: 12,
-    lineHeight: 17,
+    fontSize: 13,
+    lineHeight: 18,
     padding: 12,
   },
 }));

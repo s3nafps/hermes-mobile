@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Alert, Text, View } from 'react-native';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 
+import { confirmAction } from '@/components/control/confirm';
 import { useGateway } from '@/lib/gateway';
 import { useAction } from '@/lib/gateway/hooks';
+import { addressHints, isPlainHttpPublic } from '@/lib/gateway/http';
 import { tokens } from '@/constants/tokens';
 import { Button, Card, Field, InlineNotice, Row, Screen, Section } from '@/components/ui';
 
@@ -33,6 +35,10 @@ export default function ConnectScreen() {
       return;
     }
     await add.run(name, address);
+  };
+
+  const onTest = () => {
+    router.push(`/diagnose?address=${encodeURIComponent(address)}` as Href);
   };
 
   const onSignIn = async () => {
@@ -111,8 +117,25 @@ export default function ConnectScreen() {
             keyboardType="url"
             autoComplete="off"
           />
+          {addressHints(address).map((hint) => (
+            <InlineNotice key={hint} tone="warning">
+              {hint}
+            </InlineNotice>
+          ))}
+          {isPlainHttpPublic(address) ? (
+            <InlineNotice tone="warning">
+              This address uses plain http on the internet. Your password and session travel unencrypted. Use Tailscale, a VPN, or an https address.
+            </InlineNotice>
+          ) : null}
           {add.error ? <InlineNotice tone="danger">{add.error}</InlineNotice> : null}
-          <Button label="Connect" onPress={onAdd} loading={add.pending} disabled={busy} />
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={{ flex: 1 }}>
+              <Button label="Connect" onPress={onAdd} loading={add.pending} disabled={busy} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Button label="Test connection" variant="secondary" onPress={onTest} disabled={busy || !address.trim()} />
+            </View>
+          </View>
         </Card>
       ) : null}
 
@@ -125,6 +148,23 @@ export default function ConnectScreen() {
               subtitle={profile.baseUrl}
               last={index === gateway.profiles.length - 1}
               onPress={() => void gateway.selectGateway(profile.id)}
+              right={
+                <Button
+                  label="Remove"
+                  variant="ghost"
+                  compact
+                  disabled={busy}
+                  onPress={() =>
+                    confirmAction({
+                      title: 'Remove gateway',
+                      body: `Remove ${profile.name}? You can add it again later with its address.`,
+                      action: 'Remove',
+                      destructive: true,
+                      onConfirm: () => gateway.removeGateway(profile.id),
+                    })
+                  }
+                />
+              }
             />
           ))}
         </Section>

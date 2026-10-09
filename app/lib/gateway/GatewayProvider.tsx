@@ -6,6 +6,7 @@ import {
   normalizeBaseUrl,
   toWebSocketUrl,
   unwrap,
+  withDeadline,
   type GatewayHttp,
 } from './http';
 import { loadStored, newProfileId, saveStored, type GatewayProfile } from './profiles';
@@ -40,26 +41,6 @@ type GatewayContextValue = {
 const GatewayContext = createContext<GatewayContextValue | null>(null);
 
 const CONNECT_TIMEOUT_MS = 15_000;
-const REQUEST_TIMEOUT_MS = 10_000;
-
-// Bounds one connect-time request. Without it, a host that drops packets leaves
-// the app on "Connecting" for as long as the OS keeps retrying, which can be minutes.
-async function withDeadline<T>(run: (signal: AbortSignal) => Promise<T>): Promise<T> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-  try {
-    return await run(controller.signal);
-  } catch (caught) {
-    if (controller.signal.aborted) {
-      throw new Error(
-        `No answer from the gateway after ${REQUEST_TIMEOUT_MS / 1000} seconds. Check the address, and that Hermes is running and reachable from this phone.`,
-      );
-    }
-    throw caught;
-  } finally {
-    clearTimeout(timer);
-  }
-}
 
 // Reads the per-process token the dashboard injects into its page. A loopback
 // gateway (auth off) needs it on the WebSocket. Gated gateways use tickets.

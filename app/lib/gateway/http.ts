@@ -41,6 +41,84 @@ export function normalizeBaseUrl(input: string): string {
   return url.origin + url.pathname.replace(/\/+$/, '');
 }
 
+export const REQUEST_TIMEOUT_MS = 10_000;
+
+// Bounds one request. Without it, a host that drops packets leaves the app waiting for as
+// long as the OS keeps retrying, which can be minutes.
+export async function withDeadline<T>(
+  run: (signal: AbortSignal) => Promise<T>,
+  timeoutMs = REQUEST_TIMEOUT_MS,
+): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await run(controller.signal);
+  } catch (caught) {
+    if (controller.signal.aborted) {
+      throw new Error(
+        `No answer from the gateway after ${timeoutMs / 1000} seconds. Check the address, and that Hermes is running and reachable from this phone.`,
+      );
+    }
+    throw caught;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// True for addresses that stay on this phone, the local network, or a VPN such as
+// Tailscale. Plain http is acceptable there. Any other host is treated as public.
+function isPrivateHost(host: string): boolean {
+  if (host === 'localhost' || host.endsWith('.local') || host.endsWith('.ts.net')) return true;
+  if (host === '[::1]' || /^\[f[cd]/i.test(host)) return true;
+  const octets = host.split('.').map(Number);
+  if (octets.length !== 4 || octets.some((n) => !Number.isInteger(n) || n < 0 || n > 255)) return false;
+  const [a, b] = octets;
+  return (
+    a === 10 ||
+    a === 127 ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168) ||
+    (a === 100 && b >= 64 && b <= 127) ||
+    (a === 169 && b === 254)
+  );
+}
+
+// Warns when an address would send the password over plain http to a public host.
+export function isPlainHttpPublic(input: string): boolean {
+  try {
+    const url = new URL(normalizeBaseUrl(input));
+    return url.protocol === 'http:' && !isPrivateHost(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+// Mistakes we can recognise from the text alone. Each hint says what to change.
+export function addressHints(input: string): string[] {
+  const trimmed = input.trim();
+  if (!trimmed) return [];
+  let url: URL;
+  try {
+    url = new URL(/^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`);
+  } catch {
+    return ['This does not look like an address. Use something like http://192.168.1.20:9119.'];
+  }
+  const hints: string[] = [];
+  if (url.port === '8642') {
+    hints.push(
+      "Port 8642 is Hermes's messaging API, which this app cannot use. The app needs the dashboard, usually port 9119.",
+    );
+  }
+  if (url.pathname !== '/' && url.pathname !== '') {
+    hints.push(`Remove "${url.pathname}" from the address. Enter only the address and port, such as http://192.168.1.20:9119.`);
+  }
+  const isIp = /^\d{1,3}(\.\d{1,3}){3}$/.test(url.hostname);
+  if (!url.port && url.protocol === 'http:' && isIp) {
+    hints.push('No port is given. The dashboard listens on port 9119 by default.');
+  }
+  return hints;
+}
+
 // The dashboard's WebSocket lives on the same origin, with wss:// for https.
 export function toWebSocketUrl(baseUrl: string, path: string, query: Record<string, string>): string {
   const url = new URL(baseUrl + path);

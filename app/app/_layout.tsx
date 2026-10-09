@@ -42,6 +42,8 @@ function Gate() {
   const { phase } = useGateway();
   const segments = useSegments();
   const onConnect = segments[0] === 'connect';
+  // The setup screens work without a connected gateway: connect, and its connection test.
+  const onSetup = onConnect || segments[0] === 'diagnose';
 
   useEffect(() => {
     if (phase === 'loading') return;
@@ -50,12 +52,12 @@ function Gate() {
       if (onConnect) router.replace('/(tabs)');
       return;
     }
-    if (!onConnect) router.replace('/connect');
-  }, [phase, onConnect]);
+    if (!onSetup) router.replace('/connect');
+  }, [phase, onConnect, onSetup]);
 
   // Screens assume a connected gateway, so nothing mounts until the handshake finishes.
-  // The connect screen is the only route that renders while connecting.
-  if (phase === 'loading' || (phase === 'connecting' && !onConnect)) return null;
+  // The setup screens are the only routes that render while connecting.
+  if (phase === 'loading' || (phase === 'connecting' && !onSetup)) return null;
 
   return (
     <>
@@ -68,6 +70,7 @@ function Gate() {
         }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="connect" options={{ headerShown: false }} />
+        <Stack.Screen name="diagnose" options={{ headerShown: false }} />
       </Stack>
       <PromptHost />
     </>

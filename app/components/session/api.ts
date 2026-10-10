@@ -99,3 +99,26 @@ export async function setConfig(
   const result = await rpc.call<ConfigSetResult | null | undefined>('config.set', params);
   return result ?? {};
 }
+
+// Makes a model and reasoning level the gateway default for new chats. The gateway writes both to config.yaml.
+// The model goes first, since it can ask to confirm an expensive model. The level is sent only after that.
+export async function makeGlobalDefault(
+  rpc: RpcClient,
+  liveId: string,
+  defaults: { model: string; provider: string; level: ReasoningLevel | null },
+  confirmExpensive = false,
+): Promise<ConfigSetResult> {
+  if (defaults.model) {
+    const value = [defaults.model, defaults.provider ? `--provider ${defaults.provider}` : '', '--global']
+      .filter(Boolean)
+      .join(' ');
+    const params: Record<string, unknown> = { key: 'model', value, session_id: liveId };
+    if (confirmExpensive) params.confirm_expensive_model = true;
+    const result = (await rpc.call<ConfigSetResult | null | undefined>('config.set', params)) ?? {};
+    if (result.confirm_required && !confirmExpensive) return result;
+  }
+  if (defaults.level) {
+    await rpc.call('config.set', { key: 'reasoning', value: defaults.level, session_id: liveId, scope: 'global' });
+  }
+  return {};
+}

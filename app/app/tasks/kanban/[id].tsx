@@ -15,8 +15,9 @@ import {
 } from '@/components/tasks/api';
 import { formatWhen, labelFor, toneFor } from '@/components/tasks/format';
 import { Badge, Card, ErrorState, InlineNotice, LoadingState, Screen } from '@/components/ui';
-import { tokens } from '@/constants/tokens';
+import { MONO, tokens } from '@/constants/tokens';
 import { useGatewayQuery, useHttp } from '@/lib/gateway';
+import { themed } from '@/lib/theme';
 
 // The task drawer. Every section reads the same board, taken from the ?board= query.
 export default function KanbanTaskScreen() {
@@ -57,11 +58,16 @@ export default function KanbanTaskScreen() {
         <View style={styles.header}>
           <Badge label={labelFor(task.status, 'No status')} tone={toneFor(task.status)} />
           <Text style={styles.meta}>
-            Created {formatWhen(task.createdAt, 'time unknown')}
-            {task.completedAt ? ` · Completed ${formatWhen(task.completedAt)}` : ''}
+            Created <Text style={styles.mono}>{formatWhen(task.createdAt, 'time unknown')}</Text>
+            {task.completedAt ? (
+              <Text>
+                {' · Completed '}
+                <Text style={styles.mono}>{formatWhen(task.completedAt)}</Text>
+              </Text>
+            ) : null}
           </Text>
           <Text style={styles.meta} selectable>
-            ID {task.id}
+            ID <Text style={styles.mono}>{task.id}</Text>
           </Text>
         </View>
 
@@ -90,9 +96,10 @@ export default function KanbanTaskScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   header: { gap: 6, alignItems: 'flex-start' },
   meta: { color: tokens.textMuted, fontSize: 13 },
-  label: { color: tokens.textMuted, fontSize: 12, fontWeight: '600', letterSpacing: 0.6 },
-  body: { color: tokens.text, fontSize: 14, lineHeight: 20 },
-});
+  mono: { fontFamily: MONO },
+  label: { color: tokens.textMuted, fontSize: 13, fontWeight: '600', letterSpacing: 0.6 },
+  body: { color: tokens.text, fontSize: 15, lineHeight: 21 },
+}));

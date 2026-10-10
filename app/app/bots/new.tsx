@@ -20,6 +20,7 @@ import {
 } from '@/components/ui';
 import { tokens } from '@/constants/tokens';
 import { messageOf, useAction, useGateway, useGatewayQuery } from '@/lib/gateway';
+import { themed } from '@/lib/theme';
 
 // Letters, numbers, dashes and underscores. The gateway checks the name again on save.
 const NAME_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/;
@@ -155,7 +156,7 @@ export default function NewBotScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   form: { gap: 14 },
   chipsPad: { padding: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: tokens.line },
-});
+}));

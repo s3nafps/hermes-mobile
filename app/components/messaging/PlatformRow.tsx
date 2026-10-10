@@ -16,9 +16,9 @@ type Props = {
   onTest: () => void;
 };
 
-function statusOf(platform: MessagingPlatform): { label: string; tone: 'done' | 'accent' | 'neutral' } {
+function statusOf(platform: MessagingPlatform): { label: string; tone: 'done' | 'warn' | 'neutral' } {
   if (platform.connected) return { label: 'Connected', tone: 'done' };
-  if (platform.needsSetup) return { label: 'Needs setup', tone: 'accent' };
+  if (platform.needsSetup) return { label: 'Needs setup', tone: 'warn' };
   if (platform.enabled) return { label: 'Not connected', tone: 'neutral' };
   return { label: 'Off', tone: 'neutral' };
 }

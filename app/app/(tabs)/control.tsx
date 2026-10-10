@@ -1,4 +1,5 @@
 import { router, type Href } from 'expo-router';
+import { StyleSheet } from 'react-native';
 
 import { ControlSections, type SectionSlug } from '@/components/control/ControlSections';
 import { untyped } from '@/components/control/client';
@@ -9,6 +10,7 @@ import type { ConfigObject, SystemStats, ThemesResponse } from '@/components/con
 import { VpsHealth } from '@/components/control/VpsHealth';
 import { Button, ErrorState, InlineNotice, LoadingState, Screen, ScreenTitle } from '@/components/ui';
 import { useGateway, useGatewayQuery, type GatewayStatus } from '@/lib/gateway';
+import { themed } from '@/lib/theme';
 
 // Control home: the active gateway, its live state, host pressure, and links to each section.
 export default function ControlScreen() {
@@ -83,6 +85,7 @@ export default function ControlScreen() {
             variant="ghost"
             compact
             onPress={() => router.push('/control/gateways' as Href)}
+            style={styles.switchButton}
           />
         }
       />
@@ -105,6 +108,11 @@ export default function ControlScreen() {
     </Screen>
   );
 }
+
+const styles = themed(() => StyleSheet.create({
+  // The compact button is 40px. The title action needs a 44px target.
+  switchButton: { minHeight: 44 },
+}));
 
 // Reads approvals.mode from the config. Returns null when the config is missing or unexpected.
 function readApprovalMode(config: ConfigObject | undefined): string | null {

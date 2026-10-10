@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { TabItems, type TabItemsProps } from '@/components/navigation/TabItems';
-import { tokens } from '@/constants/tokens';
+import { capsuleStyles, TabItems, type TabItemsProps } from '@/components/navigation/TabItems';
+import { lift, tokens } from '@/constants/tokens';
+import { themed } from '@/lib/theme';
 
 type Props = TabItemsProps & {
   // Distance from the screen bottom to the top of the keyboard. The button sits right above it.
@@ -16,16 +17,16 @@ const MENU_GAP = 12;
 
 // While the keyboard is open, the bottom bar is behind it. This round button stays right above
 // the keyboard instead, on the right. Tapping it opens the same five tabs as a menu, and a tab closes it.
-export function FloatingTabs({ keyboardHeight, lift, state, descriptors, navigation }: Props) {
+export function FloatingTabs({ keyboardHeight, lift: gap, state, descriptors, navigation }: Props) {
   const [open, setOpen] = useState(false);
-  const bottom = keyboardHeight + lift;
+  const bottom = keyboardHeight + gap;
   const current = state.routes[state.index];
   const icon = descriptors[current.key].options.tabBarIcon;
 
   return (
     <>
       {open ? (
-        <View style={[styles.menu, { bottom: bottom + BUTTON_SIZE + MENU_GAP }]}>
+        <View style={[capsuleStyles.shell, styles.menu, { bottom: bottom + BUTTON_SIZE + MENU_GAP }]}>
           <TabItems
             state={state}
             descriptors={descriptors}
@@ -46,7 +47,7 @@ export function FloatingTabs({ keyboardHeight, lift, state, descriptors, navigat
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   button: {
     position: 'absolute',
     right: 16,
@@ -56,27 +57,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: tokens.accent,
-    shadowColor: '#000',
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
+    ...lift('float'),
   },
   menu: {
     position: 'absolute',
     left: 14,
     right: 14,
-    flexDirection: 'row',
-    gap: 4,
-    padding: 6,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: tokens.line,
-    backgroundColor: tokens.surface,
-    shadowColor: '#000',
-    shadowOpacity: 0.35,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 8,
   },
-});
+}));

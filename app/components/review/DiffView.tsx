@@ -1,6 +1,7 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { MONO, tokens } from '@/constants/tokens';
+import { themed } from '@/lib/theme';
 
 // Long diffs are cut off here so the screen stays responsive on a phone.
 const MAX_LINES = 600;
@@ -54,9 +55,9 @@ export function DiffView({ diff }: { diff: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   wrap: { gap: 8 },
   line: { paddingHorizontal: 8 },
   code: { fontFamily: MONO, fontSize: 12, lineHeight: 17 },
   note: { color: tokens.textMuted, fontSize: 13, lineHeight: 18 },
-});
+}));

@@ -7,6 +7,7 @@ import type { GatewayQuery } from '@/lib/gateway/hooks';
 
 import { MAX_PREVIEW_BYTES, MAX_PREVIEW_LINES, fileKind } from './fileKind';
 import type { FilePreviewData, ManagedEntry } from './types';
+import { themed } from '@/lib/theme';
 
 // Contents of the file sheet. Images and other binary files show only their name, type and size.
 export function FilePreview({ entry, preview }: { entry: ManagedEntry; preview: GatewayQuery<FilePreviewData> }) {
@@ -65,10 +66,10 @@ export function FilePreview({ entry, preview }: { entry: ManagedEntry; preview: 
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   stack: { gap: 12 },
   details: { gap: 4 },
   detail: { color: tokens.textMuted, fontSize: 13 },
   code: { color: tokens.text, fontFamily: MONO, fontSize: 12, lineHeight: 17 },
   note: { color: tokens.textMuted, fontSize: 13 },
-});
+}));

@@ -18,6 +18,7 @@ import { useAction, useGateway, useGatewayQuery } from '@/lib/gateway';
 
 import { installHubSkill, searchHub, updateHubSkills } from './api';
 import type { HubSkill } from './types';
+import { themed } from '@/lib/theme';
 
 // Search the skill hub, install from it, and update the skills already installed from it.
 export function HubSkills() {
@@ -120,7 +121,7 @@ export function HubSkills() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   search: { gap: 10 },
   updateRow: { padding: 14, gap: 10 },
-});
+}));

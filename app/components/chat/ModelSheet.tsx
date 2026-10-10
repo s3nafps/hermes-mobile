@@ -5,6 +5,7 @@ import { confirmAction } from '@/components/control/confirm';
 import {
   fetchModelOptions,
   friendlyError,
+  makeGlobalDefault,
   MODEL_BUSY_MESSAGE,
   OFFLINE_MESSAGE,
   REASONING_BUSY_MESSAGE,
@@ -26,14 +27,20 @@ import {
 import { tokens } from '@/constants/tokens';
 import { useAction, useGateway, useGatewayQuery } from '@/lib/gateway';
 
+// The gateway's levels, in its order. A session can report any of them, so each one has a chip.
 const REASONING_OPTIONS: { value: ReasoningLevel; label: string }[] = [
+  { value: 'none', label: 'Off' },
+  { value: 'minimal', label: 'Minimal' },
   { value: 'low', label: 'Low' },
   { value: 'medium', label: 'Medium' },
   { value: 'high', label: 'High' },
+  { value: 'xhigh', label: 'Extra high' },
+  { value: 'max', label: 'Max' },
+  { value: 'ultra', label: 'Ultra' },
 ];
 
 function isReasoningLevel(value: unknown): value is ReasoningLevel {
-  return value === 'low' || value === 'medium' || value === 'high';
+  return REASONING_OPTIONS.some((option) => option.value === value);
 }
 
 type Props = {
@@ -80,6 +87,9 @@ export function ModelSheet({ visible, onClose, liveId, model, provider, running,
 
   // The gateway asks before an expensive model. The user confirms, then the change is sent again.
   const applyModel = async (chosen: string, confirmed = false): Promise<void> => {
+    // The gateway resets a chat's reasoning level to its config value when the model changes. The level
+    // in view is read before the switch, then sent again once the switch has gone through.
+    const level = reasoning;
     const result = await apply.run(chosen, confirmed);
     if (!result) return;
     if (result.confirm_required && !confirmed) {
@@ -92,6 +102,10 @@ export function ModelSheet({ visible, onClose, liveId, model, provider, running,
       return;
     }
     setPickedModel(null);
+    if (level) {
+      const saved = await reasoningAction.run(level);
+      if (saved) setPickedReasoning(saved);
+    }
     options.refetch();
   };
 
@@ -110,11 +124,58 @@ export function ModelSheet({ visible, onClose, liveId, model, provider, running,
     if (saved) setPickedReasoning(saved);
   };
 
+  // The gateway default for new chats. It takes the model and level in view, or the current model when none is picked.
+  const [defaultSaved, setDefaultSaved] = useState(false);
+  const defaultTarget = pickedModel
+    ? { model: pickedModel, provider: activeSlug }
+    : { model: currentModel, provider: currentProvider };
+  const defaultLevel = reasoning;
+  const defaultAction = useAction(async (confirmed: boolean) => {
+    if (!rpc) throw new Error(OFFLINE_MESSAGE);
+    try {
+      return await makeGlobalDefault(rpc, liveId, { ...defaultTarget, level: defaultLevel }, confirmed);
+    } catch (caught) {
+      throw friendlyError(caught, MODEL_BUSY_MESSAGE);
+    }
+  });
+
+  const runMakeDefault = async (confirmed: boolean): Promise<void> => {
+    const result = await defaultAction.run(confirmed);
+    if (!result) return;
+    if (result.confirm_required && !confirmed) {
+      confirmAction({
+        title: 'Use this model?',
+        body: result.confirm_message || 'This model may cost more to use. Use it anyway?',
+        action: 'Use model',
+        onConfirm: () => runMakeDefault(true),
+      });
+      return;
+    }
+    setDefaultSaved(true);
+    options.refetch();
+  };
+
+  const askMakeDefault = () => {
+    const levelLabel = defaultLevel ? (REASONING_OPTIONS.find((option) => option.value === defaultLevel)?.label ?? defaultLevel) : null;
+    const parts = [defaultTarget.model, levelLabel ? `${levelLabel} reasoning` : null].filter(Boolean);
+    confirmAction({
+      title: 'Make this the default?',
+      body: `New chats on this gateway will start with ${parts.join(' at ')}. Chats that are already open keep their settings.`,
+      action: 'Make default',
+      onConfirm: () => {
+        setDefaultSaved(false);
+        void runMakeDefault(false);
+      },
+    });
+  };
+
   const close = () => {
     setPickedProvider(null);
     setPickedModel(null);
+    setDefaultSaved(false);
     apply.clearError();
     reasoningAction.clearError();
+    defaultAction.clearError();
     onClose();
   };
 
@@ -170,6 +231,9 @@ export function ModelSheet({ visible, onClose, liveId, model, provider, running,
           ))}
         </Section>
       ) : null}
+      {activeProvider && activeProvider.authenticated && !activeProvider.models.length ? (
+        <InlineNotice tone="info">{`${activeProvider.name} lists no models on this gateway.`}</InlineNotice>
+      ) : null}
 
       {apply.error ? <InlineNotice tone="danger">{apply.error}</InlineNotice> : null}
       {pickedModel ? (
@@ -191,10 +255,24 @@ export function ModelSheet({ visible, onClose, liveId, model, provider, running,
       />
       {reasoning === null ? (
         <Text style={{ color: tokens.textMuted, fontSize: 13 }}>
-          The current level is not reported yet. Choose one to set it.
+          {reportedReasoning === null
+            ? 'The current level is not reported yet. Choose one to set it.'
+            : reportedReasoning === ''
+              ? "This chat uses the model's default level. Choose one to change it."
+              : `The gateway reports the level "${reportedReasoning}", which this app does not offer.`}
         </Text>
       ) : null}
       {reasoningAction.error ? <InlineNotice tone="danger">{reasoningAction.error}</InlineNotice> : null}
+
+      <Button
+        label="Make default for new chats"
+        variant="secondary"
+        onPress={askMakeDefault}
+        disabled={running || defaultAction.pending || (!defaultTarget.model && !defaultLevel)}
+        loading={defaultAction.pending}
+      />
+      {defaultAction.error ? <InlineNotice tone="danger">{defaultAction.error}</InlineNotice> : null}
+      {defaultSaved ? <InlineNotice tone="info">Saved as the default for new chats.</InlineNotice> : null}
     </Sheet>
   );
 }

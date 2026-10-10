@@ -7,6 +7,7 @@ import { useAction, useHttp } from '@/lib/gateway';
 import { updateTask } from './api';
 import { confirmFirst, labelFor } from './format';
 import type { Assignee, KanbanColumn, KanbanTaskDetail, TaskPatch } from './types';
+import { themed } from '@/lib/theme';
 
 type Props = {
   board: string | null;
@@ -186,7 +187,7 @@ export function TaskDetails({ board, detail, columns, assignees, onSaved }: Prop
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   form: { gap: 16 },
   group: { gap: 8 },
-});
+}));

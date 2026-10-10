@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { Badge, Field, InlineNotice, LoadingState, Row, Section } from '@/components/ui';
 
 import type { CronValues, DeliveryTarget } from './types';
+import { themed } from '@/lib/theme';
 
 type Props = {
   values: CronValues;
@@ -77,7 +78,7 @@ function DeliveryPicker({ values, onChange, targets, targetsError }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   form: { gap: 16 },
   picker: { gap: 10 },
-});
+}));

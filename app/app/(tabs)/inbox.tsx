@@ -1,13 +1,13 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { MONO, tokens } from '@/constants/tokens';
 import { useChat } from '@/lib/chat/ChatProvider';
 import { livePrompts, type Notice, type PendingPrompt } from '@/lib/chat/reducer';
 import { PROMPT_WINDOW_MS, type ApprovalChoice } from '@/lib/chat/types';
 import { messageOf, useLiveScreen } from '@/lib/gateway/hooks';
-import { Button, Card, EmptyState, InlineNotice, Screen, ScreenTitle, Segmented, Section, Row } from '@/components/ui';
+import { Badge, Button, Card, EmptyState, InlineNotice, Screen, ScreenTitle, Segmented, Section, Row } from '@/components/ui';
 
 type Tab = 'needs' | 'updates';
 
@@ -92,9 +92,9 @@ function PromptCard({ prompt, now }: { prompt: PendingPrompt; now: number }) {
     const choices = prompt.choices ?? ['once', 'deny'];
     return (
       <Card tone="accent" style={{ gap: 10 }}>
-        <Text style={{ color: tokens.accent, fontSize: 12, fontWeight: '600' }}>APPROVAL · {secondsLeft}s left</Text>
+        <Badge label={`APPROVAL · ${secondsLeft}s left`} tone="warn" />
         <Text style={{ color: tokens.text, fontFamily: MONO, fontSize: 13, lineHeight: 19 }}>{prompt.command}</Text>
-        <Text style={{ color: tokens.textMuted, fontSize: 12 }}>{where}</Text>
+        <Text style={{ color: tokens.textMuted, fontSize: 13 }}>{where}</Text>
         {error ? <InlineNotice tone="danger">{error}</InlineNotice> : null}
         <View style={{ flexDirection: 'row', gap: 8 }}>
           {choices.includes('deny') ? (
@@ -117,11 +117,12 @@ function PromptCard({ prompt, now }: { prompt: PendingPrompt; now: number }) {
 
   return (
     <Card tone="accent" style={{ gap: 10 }}>
-      <Text style={{ color: tokens.accent, fontSize: 12, fontWeight: '600' }}>
-        {prompt.kind === 'clarify' ? 'QUESTION' : prompt.kind === 'sudo' ? 'PASSWORD' : 'SECRET'} · {secondsLeft}s left
-      </Text>
+      <Badge
+        label={`${prompt.kind === 'clarify' ? 'QUESTION' : prompt.kind === 'sudo' ? 'PASSWORD' : 'SECRET'} · ${secondsLeft}s left`}
+        tone={prompt.kind === 'clarify' ? 'info' : 'warn'}
+      />
       <Text style={{ color: tokens.text, fontSize: 15, lineHeight: 21 }}>{title}</Text>
-      <Text style={{ color: tokens.textMuted, fontSize: 12 }}>{where}</Text>
+      <Text style={{ color: tokens.textMuted, fontSize: 13 }}>{where}</Text>
       <Button label="Answer" variant="secondary" compact onPress={openChat} disabled={!session?.storedKey} />
     </Card>
   );
@@ -136,9 +137,13 @@ function NoticeRow({ notice, last }: { notice: Notice; last: boolean }) {
       last={last}
       onPress={notice.storedKey ? () => router.push(`/chat/${encodeURIComponent(notice.storedKey as string)}`) : undefined}
       right={
-        <Text accessibilityRole="button" accessibilityLabel="Dismiss" onPress={() => chat.dismissNotice(notice.id)} style={{ color: tokens.textMuted, fontSize: 13, paddingLeft: 8 }}>
-          Dismiss
-        </Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Dismiss"
+          onPress={() => chat.dismissNotice(notice.id)}
+          style={{ minHeight: 44, justifyContent: 'center', paddingLeft: 8 }}>
+          <Text style={{ color: tokens.textMuted, fontSize: 13 }}>Dismiss</Text>
+        </Pressable>
       }
     />
   );

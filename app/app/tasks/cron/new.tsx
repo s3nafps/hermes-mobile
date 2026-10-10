@@ -8,6 +8,7 @@ import type { CronValues } from '@/components/tasks/types';
 import { Button, Chip, InlineNotice, Screen, SectionLabel } from '@/components/ui';
 import { tokens } from '@/constants/tokens';
 import { useAction, useGatewayQuery, useHttp } from '@/lib/gateway';
+import { themed } from '@/lib/theme';
 
 const EMPTY: CronValues = { name: '', prompt: '', schedule: '', deliver: 'local' };
 
@@ -88,7 +89,7 @@ export default function NewCronJobScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   blueprints: { gap: 8 },
   hint: { color: tokens.textMuted, fontSize: 13, lineHeight: 18 },
-});
+}));

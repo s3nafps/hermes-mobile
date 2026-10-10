@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { createTask, listAssignees, type NewTask } from '@/components/tasks/api';
 import { Button, Chip, Field, InlineNotice, Screen, SectionLabel } from '@/components/ui';
 import { useAction, useGatewayQuery, useHttp } from '@/lib/gateway';
+import { themed } from '@/lib/theme';
 
 // Creates a task on the board the user was viewing (the ?board= query).
 export default function NewTaskScreen() {
@@ -87,6 +88,6 @@ export default function NewTaskScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   group: { gap: 8 },
-});
+}));

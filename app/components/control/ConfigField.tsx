@@ -5,6 +5,7 @@ import { tokens } from '@/constants/tokens';
 
 import { fieldLabel, titleCase } from './configPath';
 import type { ConfigSchemaField } from './types';
+import { themed } from '@/lib/theme';
 
 type Props = {
   field: ConfigSchemaField;
@@ -78,9 +79,9 @@ export function ConfigField({ field, value, secretSet, onChange }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   block: { gap: 6 },
   hint: { color: tokens.textMuted, fontSize: 12 },
   label: { color: tokens.textMuted, fontSize: 13 },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 36 },
-});
+}));

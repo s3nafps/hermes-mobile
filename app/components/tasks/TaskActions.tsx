@@ -7,6 +7,7 @@ import { useAction, useHttp } from '@/lib/gateway';
 import { decomposeTask, reassignTask, reclaimTask, specifyTask } from './api';
 import { confirmFirst } from './format';
 import type { Assignee, KanbanTaskDetail } from './types';
+import { themed } from '@/lib/theme';
 
 type Props = {
   board: string | null;
@@ -166,6 +167,6 @@ export function TaskActions({ board, detail, assignees, onChanged }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   wrap: { gap: 12 },
-});
+}));

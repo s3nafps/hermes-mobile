@@ -1,4 +1,4 @@
-import { DarkTheme, Stack, ThemeProvider, router, useSegments } from 'expo-router';
+import { Stack, router, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { tokens } from '@/constants/tokens';
 import { ChatProvider } from '@/lib/chat/ChatProvider';
 import { GatewayProvider, useGateway } from '@/lib/gateway';
+import { ThemeProvider } from '@/lib/theme';
 import { PromptHost } from '@/components/chat/PromptHost';
 
 export {
@@ -22,11 +23,11 @@ export const unstable_settings = {
 // Keep the splash up until the saved gateway has been checked.
 SplashScreen.preventAutoHideAsync();
 
-// The approved design is dark only in v1, so the theme does not follow the system setting.
+// The theme follows the system setting unless the user picks light or dark in Settings.
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <ThemeProvider value={DarkTheme}>
+      <ThemeProvider>
         <GatewayProvider>
           <ChatProvider>
             <Gate />
@@ -63,6 +64,7 @@ function Gate() {
         screenOptions={{
           headerStyle: { backgroundColor: tokens.bg },
           headerTintColor: tokens.text,
+          headerTitleStyle: { color: tokens.text },
           headerShadowVisible: false,
           contentStyle: { backgroundColor: tokens.bg },
         }}>

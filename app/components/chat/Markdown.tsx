@@ -2,6 +2,7 @@ import { Linking, ScrollView, StyleSheet, Text, View, type TextStyle } from 'rea
 
 import { MONO, tokens } from '@/constants/tokens';
 import { parseBlocks, parseInline, type Block, type Inline } from '@/lib/chat/markdown';
+import { themed } from '@/lib/theme';
 
 // Renders an assistant reply: headings, lists, quotes, code blocks and inline emphasis.
 export function Markdown({ source }: { source: string }) {
@@ -89,7 +90,7 @@ async function openLink(url: string): Promise<void> {
   await Linking.openURL(url).catch(() => undefined);
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   body: {
     color: tokens.text,
     fontSize: 15,
@@ -101,15 +102,14 @@ const styles = StyleSheet.create({
   },
   code: {
     gap: 6,
-    padding: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: tokens.line,
-    backgroundColor: tokens.bg,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: tokens.well,
   },
   language: {
     color: tokens.textMuted,
-    fontSize: 11,
+    fontFamily: MONO,
+    fontSize: 13,
   },
   codeText: {
     color: tokens.text,
@@ -121,15 +121,15 @@ const styles = StyleSheet.create({
     color: tokens.text,
     fontFamily: MONO,
     fontSize: 14,
-    backgroundColor: tokens.bg,
+    backgroundColor: tokens.well,
   },
   link: {
-    color: tokens.info,
+    color: tokens.atext,
     textDecorationLine: 'underline',
   },
   quote: {
-    paddingLeft: 10,
-    borderLeftWidth: 3,
+    paddingLeft: 12,
+    borderLeftWidth: 2,
     borderLeftColor: tokens.accent,
   },
-});
+}));

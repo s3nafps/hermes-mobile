@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MONO, tokens } from '@/constants/tokens';
 
 import type { ReviewFile, ReviewScope } from './types';
+import { themed } from '@/lib/theme';
 
 const STATUS_COLORS: Record<string, string> = {
   M: tokens.accent,
@@ -53,7 +54,7 @@ export function ChangedFileRow({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 12, minHeight: 48 },
   divider: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: tokens.line },
   status: { width: 16, fontFamily: MONO, fontSize: 13, fontWeight: '700', textAlign: 'center' },
@@ -61,4 +62,4 @@ const styles = StyleSheet.create({
   path: { color: tokens.text, fontFamily: MONO, fontSize: 13 },
   where: { color: tokens.textMuted, fontSize: 12 },
   count: { fontFamily: MONO, fontSize: 13, fontWeight: '600' },
-});
+}));

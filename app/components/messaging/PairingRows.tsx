@@ -5,6 +5,7 @@ import { MONO, tokens } from '@/constants/tokens';
 
 import { formatTimeLeft } from './time';
 import type { ApprovedUser, PendingCode } from './types';
+import { themed } from '@/lib/theme';
 
 type PendingProps = {
   item: PendingCode;
@@ -73,7 +74,7 @@ export function ApprovedRow({ item, last, busy, onRevoke }: ApprovedProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   codeBlock: { alignItems: 'flex-end', gap: 6 },
   code: { color: tokens.text, fontFamily: MONO, fontSize: 18, letterSpacing: 2 },
-});
+}));

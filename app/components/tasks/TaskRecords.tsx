@@ -1,10 +1,11 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Card, InlineNotice, Row, Section, SectionLabel } from '@/components/ui';
-import { tokens } from '@/constants/tokens';
+import { MONO, tokens } from '@/constants/tokens';
 
 import { formatSize } from './format';
 import type { KanbanAttachment, WorkerLog } from './types';
+import { themed } from '@/lib/theme';
 
 type AttachmentsProps = {
   attachments: KanbanAttachment[] | undefined;
@@ -64,8 +65,8 @@ export function TaskLog({ log, error }: LogProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   wrap: { gap: 10 },
-  empty: { color: tokens.textMuted, fontSize: 14 },
-  line: { color: tokens.textMuted, fontSize: 12, lineHeight: 17 },
-});
+  empty: { color: tokens.textMuted, fontSize: 15 },
+  line: { color: tokens.textMuted, fontFamily: MONO, fontSize: 13, lineHeight: 18 },
+}));

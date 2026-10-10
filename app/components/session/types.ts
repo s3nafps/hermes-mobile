@@ -44,7 +44,8 @@ export type ModelOptions = {
   provider: string;
 };
 
-export type ReasoningLevel = 'low' | 'medium' | 'high';
+// Every level the gateway accepts (VALID_REASONING_EFFORTS, plus "none" for off).
+export type ReasoningLevel = 'none' | 'minimal' | 'low' | 'medium' | 'high' | 'xhigh' | 'max' | 'ultra';
 
 // Reply from config.set. confirm_required asks the user before an expensive model is used.
 export type ConfigSetResult = {

@@ -1,10 +1,11 @@
 import { StyleSheet } from 'react-native';
 
 import { MONO, tokens } from '@/constants/tokens';
+import { themed } from '@/lib/theme';
 
 // Shared row styles for the channel, pairing and webhook lists. They match the Row
 // component in components/ui so these lists look like the rest of the Control screens.
-export const rowStyles = StyleSheet.create({
+export const rowStyles = themed(() => StyleSheet.create({
   item: { paddingHorizontal: 14, paddingVertical: 12, gap: 10, minHeight: 48 },
   divider: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: tokens.line },
   top: { flexDirection: 'row', alignItems: 'center', gap: 10 },
@@ -15,4 +16,4 @@ export const rowStyles = StyleSheet.create({
   spacer: { flex: 1 },
   mono: { color: tokens.text, fontFamily: MONO, fontSize: 13 },
   result: { fontSize: 13, lineHeight: 18 },
-});
+}));

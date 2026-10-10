@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Button, Card, Field, InlineNotice, SectionLabel } from '@/components/ui';
-import { tokens } from '@/constants/tokens';
+import { MONO, tokens } from '@/constants/tokens';
 import { useAction, useHttp } from '@/lib/gateway';
 
 import { addComment } from './api';
 import { formatWhen } from './format';
 import type { KanbanComment } from './types';
+import { themed } from '@/lib/theme';
 
 type Props = {
   board: string | null;
@@ -41,7 +42,8 @@ export function TaskComments({ board, taskId, comments, onChanged }: Props) {
       {comments.map((comment) => (
         <Card key={comment.id} style={styles.comment}>
           <Text style={styles.meta}>
-            {comment.author ?? 'Unknown author'} · {formatWhen(comment.createdAt, 'time unknown')}
+            {comment.author ?? 'Unknown author'} ·{' '}
+            <Text style={styles.mono}>{formatWhen(comment.createdAt, 'time unknown')}</Text>
           </Text>
           <Text style={styles.body}>{comment.body}</Text>
         </Card>
@@ -66,10 +68,11 @@ export function TaskComments({ board, taskId, comments, onChanged }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   wrap: { gap: 10 },
-  empty: { color: tokens.textMuted, fontSize: 14 },
+  empty: { color: tokens.textMuted, fontSize: 15 },
   comment: { gap: 4 },
-  meta: { color: tokens.textMuted, fontSize: 12 },
-  body: { color: tokens.text, fontSize: 14, lineHeight: 20 },
-});
+  meta: { color: tokens.textMuted, fontSize: 13 },
+  mono: { fontFamily: MONO },
+  body: { color: tokens.text, fontSize: 15, lineHeight: 21 },
+}));

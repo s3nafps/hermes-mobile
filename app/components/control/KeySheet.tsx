@@ -8,6 +8,7 @@ import { unwrap, useAction, useGateway } from '@/lib/gateway';
 import { NOT_CONNECTED } from './client';
 import { confirmAction } from './confirm';
 import type { EnvVarInfo } from './types';
+import { themed } from '@/lib/theme';
 
 const NAME_PATTERN = /^[A-Z][A-Z0-9_]*$/;
 
@@ -111,6 +112,6 @@ export function KeySheet({ visible, onClose, name, info, onChanged }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   status: { color: tokens.textMuted, fontSize: 13 },
-});
+}));

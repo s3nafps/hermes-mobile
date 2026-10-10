@@ -15,10 +15,25 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { tokens } from '@/constants/tokens';
+import { currentScheme, lift, tokens } from '@/constants/tokens';
+import { themed } from '@/lib/theme';
 
 // Shared building blocks for every screen. Keeping them in one place keeps the
 // feature screens consistent with the approved design.
+// Colours are read from tokens while a component renders, or inside a themed() builder, so the
+// screens follow the scheme in use. Nothing here freezes a palette at import time.
+
+// Adds an alpha channel to a #RRGGBB token, for fills and edges derived from a token.
+function withAlpha(color: string, alpha: number): string {
+  const match = /^#([0-9a-f]{6})$/i.exec(color);
+  if (!match) return color;
+  const n = parseInt(match[1], 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+}
+
+// Small controls keep a 44px touch area by reaching past their visual edge.
+const TALL_SLOP = { top: 6, bottom: 6 };
+const SHORT_SLOP = { top: 4, bottom: 4 };
 
 type ScreenProps = {
   children: ReactNode;
@@ -69,7 +84,7 @@ export function SectionLabel({ children }: { children: string }) {
 
 export function Card({ children, style, tone }: { children: ReactNode; style?: ViewStyle; tone?: 'default' | 'accent' | 'warning' | 'danger' }) {
   const borderColor =
-    tone === 'accent' ? tokens.accent : tone === 'warning' ? tokens.accent : tone === 'danger' ? tokens.danger : tokens.line;
+    tone === 'accent' ? tokens.accent : tone === 'warning' ? tokens.warn : tone === 'danger' ? tokens.danger : tokens.line;
   return <View style={[styles.card, { borderColor }, style]}>{children}</View>;
 }
 
@@ -137,8 +152,20 @@ type ButtonProps = {
   testID?: string;
 };
 
+type ButtonVariant = NonNullable<ButtonProps['variant']>;
+
+// Read while the button renders, so it follows the scheme in use.
+function buttonPalette(): Record<ButtonVariant, { bg: string; fg: string; border: string }> {
+  return {
+    primary: { bg: tokens.accent, fg: tokens.accentText, border: tokens.accent },
+    secondary: { bg: tokens.surface, fg: tokens.text, border: tokens.line },
+    danger: { bg: 'transparent', fg: tokens.danger, border: tokens.danger },
+    ghost: { bg: 'transparent', fg: tokens.atext, border: 'transparent' },
+  };
+}
+
 export function Button({ label, onPress, variant = 'primary', disabled, loading, compact, style, testID }: ButtonProps) {
-  const palette = BUTTON_PALETTE[variant];
+  const palette = buttonPalette()[variant];
   const inactive = disabled || loading;
   return (
     <Pressable
@@ -164,13 +191,6 @@ export function Button({ label, onPress, variant = 'primary', disabled, loading,
   );
 }
 
-const BUTTON_PALETTE = {
-  primary: { bg: tokens.accent, fg: tokens.accentText, border: tokens.accent },
-  secondary: { bg: tokens.surfaceRaised, fg: tokens.text, border: tokens.line },
-  danger: { bg: 'transparent', fg: tokens.danger, border: tokens.danger },
-  ghost: { bg: 'transparent', fg: tokens.accent, border: 'transparent' },
-} as const;
-
 type Option<T extends string> = { value: T; label: string };
 
 export function Segmented<T extends string>({
@@ -190,6 +210,7 @@ export function Segmented<T extends string>({
           <Pressable
             key={option.value}
             onPress={() => onChange(option.value)}
+            hitSlop={TALL_SLOP}
             accessibilityRole="tab"
             accessibilityState={{ selected: active }}
             style={[styles.segment, active && { backgroundColor: tokens.accent }]}>
@@ -220,6 +241,7 @@ export function Chip<T extends string>({
           <Pressable
             key={option.value}
             onPress={() => onChange(active ? null : option.value)}
+            hitSlop={SHORT_SLOP}
             accessibilityRole="button"
             accessibilityState={{ selected: active }}
             style={[styles.chip, active && { backgroundColor: tokens.accent, borderColor: tokens.accent }]}>
@@ -264,35 +286,39 @@ export function Toggle({
       onValueChange={onValueChange}
       disabled={disabled}
       accessibilityLabel={label}
-      trackColor={{ false: tokens.line, true: tokens.accent }}
-      thumbColor={tokens.text}
-      ios_backgroundColor={tokens.line}
+      trackColor={{ false: tokens.well, true: tokens.accent }}
+      thumbColor={currentScheme() === 'dark' ? tokens.text : tokens.surface}
+      ios_backgroundColor={tokens.well}
     />
   );
 }
 
-type Tone = 'neutral' | 'accent' | 'running' | 'done' | 'danger' | 'info';
+type Tone = 'neutral' | 'accent' | 'running' | 'done' | 'warn' | 'danger' | 'info';
 
-const TONE_COLOR: Record<Tone, string> = {
-  neutral: tokens.textMuted,
-  accent: tokens.accent,
-  running: tokens.running,
-  done: tokens.done,
-  danger: tokens.danger,
-  info: tokens.info,
-};
+// Read while the component renders, so the tones follow the scheme in use.
+function toneColors(): Record<Tone, string> {
+  return {
+    neutral: tokens.textMuted,
+    accent: tokens.accent,
+    running: tokens.running,
+    done: tokens.done,
+    warn: tokens.warn,
+    danger: tokens.danger,
+    info: tokens.info,
+  };
+}
 
 export function Badge({ label, tone = 'neutral' }: { label: string; tone?: Tone }) {
-  const color = TONE_COLOR[tone];
+  const color = toneColors()[tone];
   return (
-    <View style={[styles.badge, { borderColor: color }]}>
+    <View style={[styles.badge, { borderColor: withAlpha(color, 0.45), backgroundColor: withAlpha(color, 0.12) }]}>
       <Text style={[styles.badgeLabel, { color }]}>{label}</Text>
     </View>
   );
 }
 
 export function StatusDot({ tone }: { tone: Tone }) {
-  return <View style={[styles.dot, { backgroundColor: TONE_COLOR[tone] }]} />;
+  return <View style={[styles.dot, { backgroundColor: toneColors()[tone] }]} />;
 }
 
 export function LoadingState({ label = 'Loading…' }: { label?: string }) {
@@ -316,7 +342,7 @@ export function EmptyState({ title, body, action }: { title: string; body?: stri
 
 export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <Card tone="danger" style={{ gap: 10 }}>
+    <Card tone="danger" style={{ gap: 10, alignItems: 'center' }}>
       <Text style={styles.errorText}>{message}</Text>
       {onRetry ? <Button label="Try again" variant="secondary" compact onPress={onRetry} /> : null}
     </Card>
@@ -324,10 +350,11 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
 }
 
 export function InlineNotice({ tone = 'warning', children }: { tone?: 'warning' | 'danger' | 'info'; children: ReactNode }) {
-  const color = tone === 'danger' ? tokens.danger : tone === 'info' ? tokens.info : tokens.accent;
+  const color = tone === 'danger' ? tokens.danger : tone === 'info' ? tokens.info : tokens.warn;
+  const textColor = tone === 'danger' ? tokens.danger : tone === 'info' ? tokens.info : tokens.warnText;
   return (
-    <View style={[styles.notice, { borderColor: color }]}>
-      <Text style={styles.noticeText}>{children}</Text>
+    <View style={[styles.notice, { backgroundColor: withAlpha(color, 0.1), borderColor: withAlpha(color, 0.35) }]}>
+      <Text style={[styles.noticeText, { color: textColor }]}>{children}</Text>
     </View>
   );
 }
@@ -358,92 +385,113 @@ export function Sheet({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   fill: { flex: 1, backgroundColor: tokens.bg },
   body: { paddingHorizontal: 20, gap: 20 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   title: { color: tokens.text, fontSize: 26, fontWeight: '600' },
   subtitle: { color: tokens.textMuted, fontSize: 13 },
-  sectionLabel: { color: tokens.textMuted, fontSize: 12, fontWeight: '600', letterSpacing: 0.6 },
+  sectionLabel: { color: tokens.textMuted, fontSize: 13, fontWeight: '600', letterSpacing: 0.6 },
   card: {
     backgroundColor: tokens.surface,
     borderWidth: 1,
-    borderRadius: 14,
-    padding: 14,
-    gap: 8,
+    borderColor: tokens.line,
+    borderRadius: 22,
+    padding: 16,
+    gap: 10,
+    ...lift('card'),
   },
   section: { gap: 8 },
   sectionCard: {
     backgroundColor: tokens.surface,
     borderWidth: 1,
     borderColor: tokens.line,
-    borderRadius: 14,
-    overflow: 'hidden',
+    borderRadius: 22,
+    ...lift('card'),
   },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 12, minHeight: 48 },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    minHeight: 56,
+  },
   rowDivider: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: tokens.line },
-  rowTitle: { color: tokens.text, fontSize: 15 },
+  rowTitle: { color: tokens.text, fontSize: 15, fontWeight: '500' },
   rowSubtitle: { color: tokens.textMuted, fontSize: 13 },
   rowValue: { color: tokens.textMuted, fontSize: 13 },
   chevron: { color: tokens.textMuted, fontSize: 20 },
   button: {
-    minHeight: 48,
-    borderRadius: 12,
+    minHeight: 44,
+    borderRadius: 14,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
   },
-  buttonCompact: { minHeight: 40, paddingHorizontal: 12, borderRadius: 10 },
+  buttonCompact: { paddingHorizontal: 14 },
   buttonLabel: { fontSize: 15, fontWeight: '600' },
   buttonLabelCompact: { fontSize: 13 },
   segmented: {
     flexDirection: 'row',
-    backgroundColor: tokens.bg,
+    height: 40,
+    backgroundColor: tokens.surface,
     borderWidth: 1,
     borderColor: tokens.line,
-    borderRadius: 12,
-    padding: 4,
-    gap: 4,
+    borderRadius: 14,
+    padding: 3,
+    gap: 2,
   },
-  segment: { flex: 1, minHeight: 36, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
-  segmentLabel: { fontSize: 14, fontWeight: '600' },
+  segment: { flex: 1, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  segmentLabel: { fontSize: 13, fontWeight: '600' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
+    minHeight: 36,
+    justifyContent: 'center',
+    backgroundColor: tokens.surface,
     borderWidth: 1,
     borderColor: tokens.line,
     borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
+    paddingHorizontal: 14,
   },
   chipLabel: { fontSize: 13, fontWeight: '600' },
   field: { gap: 6 },
   fieldLabel: { color: tokens.textMuted, fontSize: 13 },
   input: {
-    minHeight: 46,
+    minHeight: 44,
     borderWidth: 1,
-    borderColor: '#3A4150',
-    borderRadius: 12,
-    backgroundColor: tokens.bg,
+    borderColor: tokens.line,
+    borderRadius: 14,
+    backgroundColor: tokens.surface,
     color: tokens.text,
     paddingHorizontal: 14,
     fontSize: 15,
   },
   inputMultiline: { minHeight: 96, paddingTop: 12, textAlignVertical: 'top' },
-  badge: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2, alignSelf: 'flex-start' },
-  badgeLabel: { fontSize: 11, fontWeight: '600' },
+  badge: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    alignSelf: 'flex-start',
+  },
+  badgeLabel: { fontSize: 13, fontWeight: '600' },
   dot: { width: 8, height: 8, borderRadius: 4 },
   state: { alignItems: 'center', gap: 10, paddingVertical: 32 },
-  stateText: { color: tokens.textMuted, fontSize: 14, textAlign: 'center' },
+  stateText: { color: tokens.textMuted, fontSize: 15, lineHeight: 21, textAlign: 'center' },
   emptyTitle: { color: tokens.text, fontSize: 17, fontWeight: '600', textAlign: 'center' },
-  errorText: { color: tokens.text, fontSize: 14, lineHeight: 20 },
-  notice: { borderWidth: 1, borderRadius: 12, padding: 12, backgroundColor: tokens.surface },
-  noticeText: { color: tokens.text, fontSize: 13, lineHeight: 19 },
-  scrim: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' },
+  errorText: { color: tokens.textMuted, fontSize: 15, lineHeight: 21, textAlign: 'center' },
+  notice: { borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12 },
+  noticeText: { fontSize: 15, lineHeight: 21 },
+  scrim: {
+    flex: 1,
+    backgroundColor: currentScheme() === 'dark' ? withAlpha(tokens.bg, 0.72) : withAlpha(tokens.text, 0.35),
+  },
   sheet: {
     backgroundColor: tokens.surface,
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     borderTopWidth: 1,
     borderColor: tokens.line,
     paddingHorizontal: 20,
@@ -451,6 +499,6 @@ const styles = StyleSheet.create({
     paddingBottom: 28,
     maxHeight: '85%',
   },
-  grabber: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: '#3A4150', marginBottom: 12 },
+  grabber: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: tokens.line, marginBottom: 12 },
   sheetTitle: { color: tokens.text, fontSize: 18, fontWeight: '600', marginBottom: 12 },
-});
+}));

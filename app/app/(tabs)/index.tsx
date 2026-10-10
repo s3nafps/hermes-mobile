@@ -56,7 +56,7 @@ export default function ChatTab() {
     <View style={{ flex: 1, backgroundColor: tokens.bg }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingTop: insets.top + 8, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: tokens.line }}>
         <View style={{ flex: 1 }}>
-          <Text numberOfLines={1} style={{ color: tokens.text, fontSize: 18, fontWeight: '600' }}>
+          <Text numberOfLines={1} style={{ color: tokens.text, fontSize: 22, fontWeight: '600' }}>
             {title}
           </Text>
         </View>

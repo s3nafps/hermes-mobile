@@ -127,13 +127,20 @@ jobs:
           prerelease: true
           generate_release_notes: true
           body: |
-            Android test build of Hermes Mobile.
+            ## Hermes Mobile ${{ steps.version.outputs.version }}
 
-            Install: download `hermes-mobile-${{ steps.version.outputs.version }}.apk` on the phone, open it, and allow installs from this source. Check the file against the `.sha256` file if you want to.
+            Android build of Hermes Mobile, built from commit `${{ github.sha }}`.
 
-            Signing: this build uses the project's standard debug key, so each new build installs over the previous one. It is not a Play Store build.
+            ### Install
+            1. Download `hermes-mobile-${{ steps.version.outputs.version }}.apk` onto the phone.
+            2. Open it, and allow installs from this source if Android asks.
+            3. Optional: check the download with `sha256sum -c hermes-mobile-${{ steps.version.outputs.version }}.apk.sha256` from the folder that holds both files.
 
-            Connect to a gateway that is reachable from the phone (for example over Tailscale or your home network). A gateway on another machine needs password sign-in enabled.
+            ### Signing
+            This build is signed with the project's standard debug key, not a release key, so it is not a Google Play build. Builds signed with this key install over each other. A phone that has a build signed another way must uninstall it first.
+
+            ### Connecting
+            Use a gateway that the phone can reach, for example over Tailscale or your home network. A gateway on another machine needs password sign-in enabled.
           files: |
             app/hermes-mobile-*.apk
             app/hermes-mobile-*.apk.sha256

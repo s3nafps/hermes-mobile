@@ -4,6 +4,7 @@ import { Alert, StyleSheet, View } from 'react-native';
 import { Button, EmptyState, Field, Row, Section } from '@/components/ui';
 
 import { confirmAction } from './confirm';
+import { themed } from '@/lib/theme';
 
 type Props = {
   label: string;
@@ -61,6 +62,6 @@ export function ListEditor({ label, items, placeholder, emptyTitle, emptyBody, b
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   wrap: { gap: 10 },
-});
+}));

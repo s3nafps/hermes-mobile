@@ -27,6 +27,7 @@ import {
 } from '@/components/ui';
 import { tokens } from '@/constants/tokens';
 import { useAction, useGateway, useGatewayQuery } from '@/lib/gateway';
+import { themed } from '@/lib/theme';
 
 // Incoming webhook routes. The webhook platform has to be on before routes can receive events.
 export default function WebhooksScreen() {
@@ -180,7 +181,7 @@ export default function WebhooksScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  noticeText: { color: tokens.text, fontSize: 14, lineHeight: 20 },
+const styles = themed(() => StyleSheet.create({
+  noticeText: { color: tokens.text, fontSize: 15, lineHeight: 21 },
   noticeActions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-});
+}));

@@ -24,6 +24,7 @@ import {
 } from '@/components/ui';
 import { MONO, tokens } from '@/constants/tokens';
 import { useGateway, useGatewayQuery } from '@/lib/gateway';
+import { themed } from '@/lib/theme';
 
 // Refresh interval while the screen is open. The agent writes files during a turn.
 const POLL_MS = 10000;
@@ -126,7 +127,7 @@ export default function ArtifactsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  label: { color: tokens.textMuted, fontSize: 12, fontWeight: '600', letterSpacing: 0.6 },
+const styles = themed(() => StyleSheet.create({
+  label: { color: tokens.textMuted, fontSize: 13, fontWeight: '600', letterSpacing: 0.6 },
   folder: { color: tokens.text, fontFamily: MONO, fontSize: 13 },
-});
+}));

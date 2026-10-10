@@ -5,6 +5,7 @@ import { Stack } from 'expo-router';
 import { Badge, Button, Card, EmptyState, Field, InlineNotice, Row, Screen, ScreenTitle, Section } from '@/components/ui';
 import { tokens } from '@/constants/tokens';
 import { useAction, useGateway } from '@/lib/gateway';
+import { themed } from '@/lib/theme';
 
 // Saved gateways. Switching reconnects the app, so the root gate may move the user to the connect screen.
 export default function GatewaysScreen() {
@@ -101,6 +102,6 @@ export default function GatewaysScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   cardTitle: { color: tokens.text, fontSize: 17, fontWeight: '600' },
-});
+}));
